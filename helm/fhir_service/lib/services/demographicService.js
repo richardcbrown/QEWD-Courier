@@ -32,7 +32,7 @@
 
 const { logger } = require('../core');
 const { ResourceName } = require('../shared/enums');
-const { getOrganisationRef, parseName, parseAddress } = require('../shared/utils');
+const { getOrganisationRef, parseName, parseAddress, parseTelecom } = require('../shared/utils');
 const debug = require('debug')('ripple-cdr-discovery:services:demographic');
 
 class DemographicService {
@@ -74,9 +74,7 @@ class DemographicService {
     demographics.gender = Array.isArray(patient.gender)
       ? patient.gender[0].toUpperCase() + patient.gender.slice(1)
       : patient.gender;
-    demographics.phone = patient.telecom && Array.isArray(patient.telecom)
-      ? patient.telecom[0].value
-      : patient.telecom;
+    demographics.telephone = parseTelecom(patient.telecom); 
     demographics.name = parseName(patient.name[0]);
     demographics.dateOfBirth = new Date(patient.birthDate).getTime();
     demographics.gpName = parseName(practitioner.name);

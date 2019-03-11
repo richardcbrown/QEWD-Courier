@@ -80,17 +80,22 @@ function getPractitionerRef(resource) {
   console.log("in getPractitionerReference")
   console.log(resource)
 
+  let practitionerReference = null
+
   if (resource.resourceType === ResourceName.PATIENT) {
 
-    // dummy reference, GP is not currently populated on test server
-    return "Practitioner/de24bec6-015f-4241-b3dd-a6da4c6332c4"
-
     if (resource.generalPractitioner) {
-      return resource.generalPractitioner.reference
+      
+      resource.generalPractitioner.forEach((practitionerItem) => {
+        
+        if (practitionerItem.reference.indexOf('Practitioner') > -1) {
+          practitionerReference = practitionerItem.reference
+        }
+      })
     }
   }
 
-  return null
+  return practitionerReference
   
   // if (resource.informationSource) {
   //   return resource.informationSource.reference;
@@ -163,20 +168,36 @@ function parseRef(reference, { separator = '/' } = {}) {
 
 //@TODO Re check functionality for correct spaces
 function parseName(name) {
-  let initName = name && name.text
-    ? name.text
+
+  console.log("NAME")
+  console.log(name)
+
+  let primaryName = null;
+
+  if (Array.isArray(name) && name.length) {
+    primaryName = name.find((nameItem) => nameItem.use === "official") || name[0];
+  }
+  else {
+    primaryName = name;
+  }
+
+  console.log("PRIMARYNAME")
+  console.log(primaryName)
+
+  let initName = primaryName && primaryName.text 
+    ? primaryName.text
     : null;
 
 
   if (!initName) {
-    if(name.given) {
-      initName = getName(name.given);
+    if(primaryName.given) {
+      initName = getName(primaryName.given);
     }
 
-    if (name.family) {
-      initName = Array.isArray(name.family)
-        ? getName(name.family)
-        : `${initName} ${name.family}`;
+    if (primaryName.family) {
+      initName = Array.isArray(primaryName.family)
+        ? getName(primaryName.family)
+        : `${initName} ${primaryName.family}`;
     }
   }
 
@@ -201,36 +222,90 @@ function getOrganisationRef(resource) {
 }
 
 //@TODO package this piece of code
-function parseAddress(pAddress) {
+function parseAddress(addressArray) {
   let address = 'Not known';
-  if (pAddress && Array.isArray(pAddress)) {
-    var addrObj = pAddress[0];
-    if (addrObj.text) {
-      address = addrObj.text;
-    }
-    else {
-      if (addrObj.postalCode) {
-        address = '';
-        var dlim = '';
-        if (addrObj.line) {
-          if (Array.isArray(addrObj.line)) {
-            addrObj.line.forEach(function(line) {
-              address = address + dlim + line;
-              dlim = ', ';
-            });
-          }
-          else {
-            address = address + dlim + addrObj.line;
-          }
-        }
-        if (addrObj.city) address = address + dlim + addrObj.city;
-        if (address === '') dlim = '';
-        address = address + dlim + addrObj.postalCode;
-      }
-    }
+
+  if (!addressArray.length) {
+    return address;
   }
 
-  return address;
+  let mainAddress = addressArray.find((addr) => addr.use === "home")
+
+  if (!mainAddress) {
+    mainAddress = addressArray[0]
+  }
+
+  if (mainAddress.text) {
+    return mainAddress.text
+  }
+
+  return address
+
+  // const addressComponents = []
+
+  // if ()
+
+  // if (pAddress && Array.isArray(pAddress)) {
+  //   var addrObj = pAddress[0];
+  //   if (addrObj.text) {
+  //     address = addrObj.text;
+  //   }
+  //   else {
+  //     if (addrObj.postalCode) {
+  //       address = '';
+  //       var dlim = '';
+  //       if (addrObj.line) {
+  //         if (Array.isArray(addrObj.line)) {
+  //           addrObj.line.forEach(function(line) {
+  //             address = address + dlim + line;
+  //             dlim = ', ';
+  //           });
+  //         }
+  //         else {
+  //           address = address + dlim + addrObj.line;
+  //         }
+  //       }
+  //       if (addrObj.city) address = address + dlim + addrObj.city;
+  //       if (address === '') dlim = '';
+  //       address = address + dlim + addrObj.postalCode;
+  //     }
+  //   }
+  // }
+
+  // return address;
+}
+
+function parseTelecom(telecomArray) {
+  
+  let blankTelecom = '';
+
+  console.log("POHONES")
+  console.log(telecomArray);
+
+  if (!telecomArray || !telecomArray.length) return blankTelecom;
+
+  const filteredTelecoms = telecomArray.filter((tel) => tel.system === 'phone' && !tel.period.end && tel.use !== 'old')
+
+  console.log(filteredTelecoms);
+
+  if (!filteredTelecoms.length) return blankTelecom;
+
+  let primaryTelecom = filteredTelecoms.find((tel) => tel.use === 'home' && tel.value && tel.value !== 'Not Recorded');
+
+  if (!primaryTelecom) {
+    primaryTelecom = filteredTelecoms.find((tel) => tel.use === 'mobile' && tel.value && tel.value !== 'Not Recorded');
+  }
+
+  if (!primaryTelecom) {
+    primaryTelecom = filteredTelecoms[0];
+  }
+
+  console.log("PRIMARY TELECOM")
+  console.log(primaryTelecom)
+
+  if (!primaryTelecom) return blankTelecom;
+
+  return primaryTelecom.value;
 }
 
 module.exports = {
@@ -242,5 +317,6 @@ module.exports = {
   getLocationRef,
   parseName,
   parseAddress,
-  flatten
+  flatten,
+  parseTelecom
 };

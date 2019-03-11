@@ -88,9 +88,10 @@ class ResourceRestService {
     debug('token: %s', token);
 
     const args = {
-      url: `${this.hostConfig.api.host}/Patient?identifier=NHS Number|${ nhsNumber }`,
+      url: `${this.hostConfig.api.host}/Patient?identifier=${ nhsNumber }`,
       method: 'GET',
       headers: {
+        Authorization: `Bearer ${token}`,
         "accept": "application/fhir+json; charset=UTF-8"
       }
       // ,
@@ -119,9 +120,10 @@ class ResourceRestService {
 
     const args = {
       //url: `${this.hostConfig.api.host + this.hostConfig.api.paths.getPatientResources}`,
-      url: `${this.hostConfig.api.host}/Patient?identifier=NHS Number|${ data }`,
+      url: `${this.hostConfig.api.host}/Patient?identifier=${ data }`,
       method: 'GET',
       headers: {
+        Authorization: `Bearer ${token}`,
         "accept": "application/fhir+json; charset=UTF-8"
       }
       // method: 'POST',
@@ -155,6 +157,7 @@ class ResourceRestService {
       method: 'GET',
       json: false,
       headers: {
+        Authorization: `Bearer ${token}`,
         "accept": "application/fhir+json; charset=UTF-8"
       }//,
       // headers: {
@@ -193,18 +196,12 @@ class ResourceRestService {
     // modified - YHCR
 
     const args = {
-      url: `${this.hostConfig.api.host}/${ resourceType }`,
+      url: `${this.hostConfig.api.host}/${ resourceType }?${ query }`,
       method: 'GET',
       json: false,
       headers: {
+        Authorization: `Bearer ${token}`,
         "accept": "application/fhir+json; charset=UTF-8"
-      },
-      //,
-      // headers: {
-      //   Authorization: `Bearer ${token}`
-      // },
-      qs: {
-        reference: query
       }
     };
 

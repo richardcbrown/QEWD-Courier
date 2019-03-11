@@ -30,12 +30,13 @@
 
 'use strict';
 
-const { byUuid } = require('./mixins/resource');
+const { byUuid, byQuery } = require('./mixins/resource');
 
 class ResourceCache {
   constructor(adapter) {
     this.adapter = adapter;
     this.byUuid = byUuid(adapter);
+    this.byQuery = byQuery(adapter);
   }
 
   static create(adapter) {

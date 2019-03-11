@@ -91,6 +91,8 @@ class ResourceService {
       const patient = x.resource;
       const patientUuid = patient.id;
 
+      if (!patientUuid) return;
+
       const exists = patientCache.byPatientUuid.exists(patientUuid);
       if (exists) return;
 
@@ -207,39 +209,34 @@ class ResourceService {
     // - the practioner is already in the process of being fetched in an earlier iteration
     const { resource } = await this.fetchResource(reference);
 
+    console.log("AFTER FETCH PRACTITIONER")
+
     debug('resource: %j', resource);
     if (!resource) return;
 
     // get PractitionerRole
-    const practionerRoleBundle = await this.fetchResources("PractitionerRole", `Practitioner=${ reference }`);
+    const roleResponse = await this.fetchResources("PractitionerRole", `practitioner=${ reference }`);
+
+    console.log("GET PRACTITIONER ROLE")
+    
+    const practionerRoleBundle = roleResponse.resource;
+    
+    console.log(practionerRoleBundle)
 
     // ensure organisation records for practitioner are also fetched and cached
 
-    // await P.each(practionerRoleBundle.entry, async (roleBundleEntry) => {
-    //   const { organisationReference } = roleBundleEntry.resource;
+    await P.each(practionerRoleBundle.entry, async (role) => {
+      if (role.resourceType !== 'PractitionerRole') return
 
-    //   if (organisationReference) {
-    //     const organisation = await this.fetchResource(organisationReference.reference);
-      
-    //     if (!organisation) {
-    //       return
-    //     }
+      const organisationRef = role.organization.reference;
+      const { resource } = await this.fetchResource(organisationRef);
+      // if (!resource) return;
 
-    //     if (resourceName === ResourceName.PATIENT) { 
-          
-    //     }
-    //   }
-    // });
-    // await P.each(resource.practitionerRole, async (role) => {
-    //   const organisationRef = role.managingOrganisation.reference;
-    //   const { resource } = await this.fetchResource(organisationRef);
-    //   if (!resource) return;
-
-    //   if (resourceName === ResourceName.PATIENT) {
-    //     const locationRef = getLocationRef(resource);
-    //     await this.fetchResource(locationRef);
-    //   }
-    // });
+      // if (resourceName === ResourceName.PATIENT) {
+      //   const locationRef = getLocationRef(resource);
+      //   await this.fetchResource(locationRef);
+      // }
+    });
   }
 
   /**
@@ -293,19 +290,21 @@ class ResourceService {
    * @return {Promise.<Object>}
    */
   async fetchResources(resourceType, query) {
-    logger.info('services/resourceService|fetchResource', { reference });
+    logger.info('services/resourceService|fetchResources', { query });
 
     //const { resourceName, uuid } = parseRef(reference);
-    //const { fetchCache, resourceCache } = this.ctx.cache;
+    const { fetchCache, resourceCache } = this.ctx.cache;
 
-    // TODO - caching on query
-    // const exists  = resourceCache.byUuid.exists(resourceName, uuid);
-    // if (exists) {
-    //   return {
-    //     ok: false,
-    //     exists: true
-    //   };
-    // }
+    console.log(resourceCache)
+
+    //TODO - caching on query
+    const exists  = resourceCache.byQuery.exists(resourceType, query);
+    if (exists) {
+      return {
+        ok: false,
+        exists: true
+      };
+    }
 
     // const fetching = fetchCache.exists(reference);
     // if (fetching) {
@@ -323,7 +322,7 @@ class ResourceService {
 
     debug('resource: %j', resource);
 
-    //resourceCache.byUuid.set(resourceName, uuid, resource);
+    resourceCache.byQuery.set(resourceType, query, resource);
 
     return {
       ok: true,

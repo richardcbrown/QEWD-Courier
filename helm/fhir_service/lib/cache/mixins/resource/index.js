@@ -31,7 +31,9 @@
 'use strict';
 
 const byUuid = require('./byUuid');
+const byQuery = require('./byQuery');
 
 module.exports = {
-  byUuid
+  byUuid,
+  byQuery
 };

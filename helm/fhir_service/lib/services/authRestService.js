@@ -68,21 +68,21 @@ class AuthRestService {
   async authenticate() {
     logger.info('services/authRestService|authenticate');
 
-    // const options = {
-    //   url: `${this.hostConfig.auth.host + this.hostConfig.auth.path}`,
-    //   method: 'POST',
-    //   form: {
-    //     username: this.hostConfig.auth.username,
-    //     password: this.hostConfig.auth.password,
-    //     client_id: this.hostConfig.auth.client_id,
-    //     grant_type: this.hostConfig.auth.grant_type
-    //   },
-    //   json: true
-    // };
+    const options = {
+      url: `${this.hostConfig.auth.host + this.hostConfig.auth.path}`,
+      method: 'POST',
+      form: {
+        grant_type: this.hostConfig.auth.grant_type
+      },
+      headers: {
+        'authorization': `Basic ${ new Buffer(this.hostConfig.auth.client_id + ':' + this.hostConfig.auth.client_secret).toString("base64") }`
+      },
+      json: true
+    };
 
-    // debug('options: %j', options);
+    debug('options: %j', options);
 
-    // return requestAsync(options);
+    return requestAsync(options);
 
     return Promise.resolve({ token: "" })
   }
