@@ -204,6 +204,8 @@ class ResourceService {
   async fetchPractitioner(resourceName, reference) {
     logger.info('services/resourceService|fetchPractitioner', { resourceName, reference });
 
+    const { resourceCache } = this.ctx.cache;
+
     // resource will be null if either:
     // - the practitioner is already cached; or
     // - the practioner is already in the process of being fetched in an earlier iteration
@@ -224,12 +226,21 @@ class ResourceService {
     console.log(practionerRoleBundle)
 
     // ensure organisation records for practitioner are also fetched and cached
+    await P.each(practionerRoleBundle.entry, async (entry) => {
 
-    await P.each(practionerRoleBundle.entry, async (role) => {
+      const role = entry.resource;
+
       if (role.resourceType !== 'PractitionerRole') return
 
       const organisationRef = role.organization.reference;
-      const { resource } = await this.fetchResource(organisationRef);
+      const organisationResponse = await this.fetchResource(organisationRef);
+
+      console.log("ORG RESPONSE")
+      console.log(organisationResponse.resource)
+
+      if (organisationResponse.resource) {
+        resourceCache.byUuid.setRelatedUuid('Practitioner', resource.id, 'Organization', organisationResponse.resource.id)
+      }
       // if (!resource) return;
 
       // if (resourceName === ResourceName.PATIENT) {
@@ -306,18 +317,18 @@ class ResourceService {
       };
     }
 
-    // const fetching = fetchCache.exists(reference);
-    // if (fetching) {
-    //   return {
-    //     ok: false,
-    //     fetching: true
-    //   };
-    // }
+    const fetching = fetchCache.exists(query);
+    if (fetching) {
+      return {
+        ok: false,
+        fetching: true
+      };
+    }
 
     const { tokenService, resourceRestService } = this.ctx.services;
     const token = await tokenService.get();
 
-    //fetchCache.set(reference);
+    fetchCache.set(query);
     const resource = await resourceRestService.getResources(resourceType, query, token);
 
     debug('resource: %j', resource);

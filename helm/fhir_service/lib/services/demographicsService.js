@@ -61,11 +61,11 @@ class DemographicService {
     const practitionerUuid = patientCache.byPatientUuid.getPractitionerUuid(patientUuid);
     const practitioner = resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
 
-    const organisationRef = getOrganisationRef(practitioner);
-    const location = resourceService.getOrganisationLocation(organisationRef);
-    if (location && location.address && location.address.text) {
-      practitioner.address = location.address.text;
-    }
+    // const organisationRef = getOrganisationRef(practitioner);
+    // const location = resourceService.getOrganisationLocation(organisationRef);
+    // if (location && location.address && location.address.text) {
+    //   practitioner.address = location.address.text;
+    // }
 
     const demographics = {};
 

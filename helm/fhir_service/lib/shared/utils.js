@@ -215,10 +215,18 @@ function getName(nameObj) {
 }
 
 function getOrganisationRef(resource) {
-  return resource.practitionerRole && resource.practitionerRole[0]
-    && resource.practitionerRole[0].managingOrganization && resource.practitionerRole[0].managingOrganization.reference
-    ? resource.practitionerRole[0].managingOrganization.reference
-    : null;
+  
+  const organisationRef = null;
+
+  if (resource.resourceType === "PractitionerRole" && resource.organization) {
+    organisationRef = resource.organization.reference;
+  }
+
+  return organisationRef;
+  // return resource.practitionerRole && resource.practitionerRole[0]
+  //   && resource.practitionerRole[0].managingOrganization && resource.practitionerRole[0].managingOrganization.reference
+  //   ? resource.practitionerRole[0].managingOrganization.reference
+  //   : null;
 }
 
 //@TODO package this piece of code

@@ -113,6 +113,39 @@ module.exports = (adapter) => {
       const key = ['Discovery', resourceName, 'by_uuid', uuid, 'practitioner'];
 
       return adapter.get(key);
+    },
+
+    /**
+     * Sets related uuid for resource
+     *
+     * @param  {string} resourceName
+     * @param  {string} uuid
+     * @param  {string} relatedResourceName
+     * @param  {string} relatedUuid
+     * @return {void}
+     */
+    setRelatedUuid: (resourceName, uuid, relatedResourceName, relatedUuid) => {
+      logger.info('mixins/resource|byUuid|setRelatedUuid', { resourceName, uuid, relatedResourceName, relatedUuid });
+
+      const key = ['Discovery', resourceName, 'by_uuid', uuid, relatedResourceName.toLowerCase()];
+
+      adapter.put(key, relatedUuid);
+    },
+
+    /**
+     * Gets related uuid for resource
+     *
+     * @param  {string} resourceName
+     * @param  {string} uuid
+     * @param  {string} relatedResourceName
+     * @return {string}
+     */
+    getRelatedUuid: (resourceName, uuid, relatedResourceName, relatedUuid) => {
+      logger.info('mixins/resource|byUuid|getRelatedUuid', { resourceName, uuid, relatedResourceName, relatedUuid });
+
+      const key = ['Discovery', resourceName, 'by_uuid', uuid, relatedResourceName.toLowerCase()];
+
+      return adapter.get(key);
     }
   };
 };

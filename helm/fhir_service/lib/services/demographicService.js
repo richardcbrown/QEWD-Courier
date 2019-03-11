@@ -60,12 +60,11 @@ class DemographicService {
     const patient = patientCache.byPatientUuid.get(patientUuid);
     const practitionerUuid = patientCache.byPatientUuid.getPractitionerUuid(patientUuid);
     const practitioner = resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
+    const practitionerOrganisationUuid = resourceCache.byUuid.getRelatedUuid(ResourceName.PRACTITIONER, practitionerUuid, 'Organization');
+    const practitionerOrganisation = resourceCache.byUuid.get('Organization', practitionerOrganisationUuid)
 
-    const organisationRef = getOrganisationRef(practitioner);
-    const location = resourceService.getOrganisationLocation(organisationRef);
-    if (location && location.address && location.address.text) {
-      practitioner.address = location.address.text;
-    }
+    console.log('Practitioner Org')
+    console.log(practitionerOrganisation)
 
     const demographics = {};
 
@@ -79,7 +78,7 @@ class DemographicService {
     demographics.dateOfBirth = new Date(patient.birthDate).getTime();
     demographics.gpName = parseName(practitioner.name);
     //@TODO should address be parsed too?
-    demographics.gpAddress = practitioner.address || 'Not known';
+    demographics.gpAddress = parseAddress(practitionerOrganisation.address) || 'Not known';
     demographics.address = parseAddress(patient.address);
 
     debug('demographics: %j', demographics);
