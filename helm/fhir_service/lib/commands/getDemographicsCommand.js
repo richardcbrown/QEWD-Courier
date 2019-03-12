@@ -73,8 +73,10 @@ class GetDemographicsCommand extends BaseCommand {
     }
 
     const { resourceService, demographicService } = this.ctx.services;
+    
     await resourceService.fetchPatients(patientId);
-    await resourceService.fetchPatientResources(patientId, ResourceName.PATIENT);
+    await resourceService.fetchPatientPractitioner(patientId);
+
     const responseObj = demographicService.getByPatientId(patientId);
     debug('response: %j', responseObj);
 

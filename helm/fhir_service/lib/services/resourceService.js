@@ -71,7 +71,7 @@ class ResourceService {
     const token = await tokenService.get();
     debug('token: %j', token);
 
-    const data = await resourceRestService.getPatients(nhsNumber, token);
+    const data = await resourceRestService.getResources('Patient', `identifier=${ nhsNumber }`, token);
     debug('data: %j', data);
 
     if (!data || !data.entry) {
@@ -108,105 +108,38 @@ class ResourceService {
   }
 
   /**
-   * Fetch patient resources
-   *
-   * @param {int|string} nhsNumber
-   * @param {string} resourceName
-   * @returns {Promise}
-   */
-  async fetchPatientResources(nhsNumber, resourceName) {
-    logger.info('services/resourceService|fetchPatientResources', { nhsNumber, resourceName });
-
-    const { patientCache } = this.ctx.cache;
-    const exists = patientCache.byResource.exists(nhsNumber, resourceName);
-
-    if (exists) return {
-      ok: false,
-      exists: true
-    };
-
-    const { resourceCache, fetchCache } = this.ctx.cache;
-    const { resourceRestService, patientService, tokenService } = this.ctx.services;
-
-    const patientBundle = patientService.getPatientBundle(nhsNumber);
-    const postData = {
-      resources: [resourceName],
-      patients: patientBundle
-    };
-
-    const token = await tokenService.get();
-    debug('post data: %j', postData);
-
-    const responseData = await resourceRestService.getPatientResources(nhsNumber, token);
-    debug('response data: %j', responseData);
-
-    if (!responseData || !responseData.entry) {
-      return {
-        ok: false,
-        entry: false
-      };
-    }
-
-    if (resourceName === ResourceName.PATIENT) {
-      patientService.updatePatientBundle();
-      patientCache.byPatientUuid.deleteAll();
-    }
-
-    fetchCache.deleteAll();
-
-    const result = {
-      ok: true,
-      totalCount: responseData.entry.length,
-      processedCount: 0
-    };
-
-    await P.each(responseData.entry, async (x) => {
-      if (x.resource.resourceType !== resourceName) return;
-
-      const resource = x.resource;
-      const uuid = resource.id;
-      const patientUuid = getPatientUuid(resource);
-
-      resourceCache.byUuid.set(resourceName, uuid, resource);
-      patientCache.byResource.set(nhsNumber, patientUuid, resourceName, uuid);
-      patientCache.byNhsNumber.setResourceUuid(nhsNumber, resourceName, uuid);
-
-      const practitionerRef = getPractitionerRef(resource);
-      
-      if (practitionerRef) {
-        const practitionerUuid = parseRef(practitionerRef).uuid;
-        resourceCache.byUuid.setPractitionerUuid(resourceName, uuid, practitionerUuid);
-        await this.fetchPractitioner(resourceName, practitionerRef);
-      }
-
-      result.processedCount++;
-    });
-
-    return result;
-  }
-
-  /**
    * Fetch a resource practioner
    *
    * @param  {string} resourceName
    * @param  {string} reference
    * @return {Promise}
    */
-  async fetchPractitioner(resourceName, reference) {
-    logger.info('services/resourceService|fetchPractitioner', { resourceName, reference });
+  async fetchPatientPractitioner(nhsNumber) {
+    logger.info('services/resourceService|fetchPatientPractitioner', { nhsNumber });
 
-    const { resourceCache } = this.ctx.cache;
+    const { patientCache, resourceCache } = this.ctx.cache;
+
+    const patientUuid = patientCache.byNhsNumber.getPatientUuid(nhsNumber);
+    const patient = patientCache.byPatientUuid.get(patientUuid);
+
+    console.log("PATIENT UUID")
+    console.log(patientUuid)
+    console.log(patient)
+
+    const practitionerReference = getPractitionerRef(patient);
 
     // resource will be null if either:
     // - the practitioner is already cached; or
     // - the practioner is already in the process of being fetched in an earlier iteration
-    const { resource } = await this.fetchResource(reference);
+    const { resource } = await this.fetchResource(practitionerReference);
 
     debug('resource: %j', resource);
     if (!resource) return;
 
+    resourceCache.byUuid.setPractitionerUuid('Patient', patientUuid, resource.id);
+
     // get PractitionerRole
-    const roleResponse = await this.fetchResources("PractitionerRole", `practitioner=${ reference }`);
+    const roleResponse = await this.fetchResources('PractitionerRole', `practitioner=${ practitionerReference }`);
     
     const practionerRoleBundle = roleResponse.resource;
 
@@ -314,32 +247,6 @@ class ResourceService {
       resource
     };
   }
-
-  /**
-   * Gets organization location
-   *
-   * @param  {string} reference
-   * @return {Object}
-   */
-  // @TODO - address is attached to Organization object - might not be needed
-  // getOrganisationLocation(reference) {
-  //   logger.info('cache/resourceService|getOrganisationLocation', { reference });
-
-  //   const organisationUuid = parseRef(reference).uuid;
-  //   if (!organisationUuid) return null;
-
-  //   const { resourceCache } = this.ctx.cache;
-  //   const organisation = resourceCache.byUuid.get(ResourceName.ORGANIZATION, organisationUuid);
-  //   debug('organisation: %j', organisation);
-  //   if (!organisation || !organisation.extension) return null;
-
-  //   const locationRef = getLocationRef(organisation);
-  //   const locationUuid = parseRef(locationRef).uuid;
-  //   const location = resourceCache.byUuid.get(ResourceName.LOCATION, locationUuid);
-  //   debug('location: %j', location);
-
-  //   return location;
-  // }
 
   /**
    * Gets resource practioner

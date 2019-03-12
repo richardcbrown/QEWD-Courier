@@ -65,100 +65,20 @@ describe('ripple-cdr-lib/lib/services/resourceRestService', () => {
     });
   });
 
-  describe('#getPatients', () => {
-    it('should send request and return patients', async () => {
-      const expected = {
-        resourceType: 'Bundle',
-        entry: [
-          {
-            resource: {
-              resourceType: 'Patient',
-              id: '9999999111',
-              name: [
-                {
-                  text: 'John Doe'
-                }
-              ]
-            }
-          }
-        ]
-      };
-
-      const data = {
-        resourceType: 'Bundle',
-        entry: [
-          {
-            resource: {
-              resourceType: 'Patient',
-              id: '9999999111',
-              name: [
-                {
-                  text: 'John Doe'
-                }
-              ]
-            }
-          }
-        ]
-      };
-      nock('https://10.153.7.80:444/FHIRService')
-        .get('/Patient?identifier=9999999000')
-        .matchHeader('authorization', 'Bearer testToken')
-        .reply(200, JSON.stringify(data));
-
-      const nhsNumber = 9999999000;
-      const actual = await resourceRestService.getPatients(nhsNumber, token);
-
-      expect(actual).toEqual(expected);
-      expect(nock).toHaveBeenDone();
-    });
-
-    it('should send request and return empty object when response not json', async () => {
-      const expected = {};
-
-      nock('https://10.153.7.80:444/FHIRService')
-        .get('/Patient?identifier=9999999000')
-        .matchHeader('authorization', 'Bearer testToken')
-        .reply(200, 'foo');
-
-      const nhsNumber = 9999999000;
-      const actual = await resourceRestService.getPatients(nhsNumber, token);
-
-      expect(actual).toEqual(expected);
-      expect(nock).toHaveBeenDone();
-    });
-
-    it('should throw error', async () => {
-      const expected = {
-        message: 'custom error',
-        code: 500
-      };
-
-      nock('https://10.153.7.80:444/FHIRService')
-        .get('/Patient?identifier=9999999000')
-        .matchHeader('authorization', 'Bearer testToken')
-        .replyWithError({
-          message: 'custom error',
-          code: 500
-        });
-
-      const nhsNumber = 9999999000;
-      const actual = resourceRestService.getPatients(nhsNumber, token);
-
-      await expectAsync(actual).toBeRejectedWith(expected);
-      expect(nock).toHaveBeenDone();
-    });
-  });
-
-  //@TODO - getPatientResources?
-  // describe('#getPatientResources', () => {
-  //   it('should send request and return patient resources', async () => {
+  // describe('#getPatients', () => {
+  //   it('should send request and return patients', async () => {
   //     const expected = {
   //       resourceType: 'Bundle',
   //       entry: [
   //         {
   //           resource: {
-  //             resourceType: 'Immunization',
-  //             uuid: 'Immunization/48f8c9e3-7bae-4418-b896-2423957f3c33'
+  //             resourceType: 'Patient',
+  //             id: '9999999111',
+  //             name: [
+  //               {
+  //                 text: 'John Doe'
+  //               }
+  //             ]
   //           }
   //         }
   //       ]
@@ -169,39 +89,24 @@ describe('ripple-cdr-lib/lib/services/resourceRestService', () => {
   //       entry: [
   //         {
   //           resource: {
-  //             resourceType: 'Immunization',
-  //             uuid: 'Immunization/48f8c9e3-7bae-4418-b896-2423957f3c33'
+  //             resourceType: 'Patient',
+  //             id: '9999999111',
+  //             name: [
+  //               {
+  //                 text: 'John Doe'
+  //               }
+  //             ]
   //           }
   //         }
   //       ]
   //     };
-  //     nock('https://devgateway.discoverydataservice.net/data-assurance')
-  //       .post('/api/fhir/resources', JSON.stringify({
-  //         resources: ['Immunization'],
-  //         patients: [
-  //           {
-  //             resource: {
-  //               resourceType: 'Patient',
-  //               id: '9999999111'
-  //             }
-  //           }
-  //         ]
-  //       }))
+  //     nock('https://10.153.7.80:444/FHIRService')
+  //       .get('/Patient?identifier=9999999000')
   //       .matchHeader('authorization', 'Bearer testToken')
   //       .reply(200, JSON.stringify(data));
 
-  //     const postData = {
-  //       resources: ['Immunization'],
-  //       patients: [
-  //         {
-  //           resource: {
-  //             resourceType: 'Patient',
-  //             id: '9999999111'
-  //           }
-  //         }
-  //       ]
-  //     };
-  //     const actual = await resourceRestService.getPatientResources(postData, token);
+  //     const nhsNumber = 9999999000;
+  //     const actual = await resourceRestService.getPatients(nhsNumber, token);
 
   //     expect(actual).toEqual(expected);
   //     expect(nock).toHaveBeenDone();
@@ -210,33 +115,13 @@ describe('ripple-cdr-lib/lib/services/resourceRestService', () => {
   //   it('should send request and return empty object when response not json', async () => {
   //     const expected = {};
 
-  //     nock('https://devgateway.discoverydataservice.net/data-assurance')
-  //       .post('/api/fhir/resources', JSON.stringify({
-  //         resources: ['Immunization'],
-  //         patients: [
-  //           {
-  //             resource: {
-  //               resourceType: 'Patient',
-  //               id: '9999999111'
-  //             }
-  //           }
-  //         ]
-  //       }))
+  //     nock('https://10.153.7.80:444/FHIRService')
+  //       .get('/Patient?identifier=9999999000')
   //       .matchHeader('authorization', 'Bearer testToken')
   //       .reply(200, 'foo');
 
-  //     const postData = {
-  //       resources: ['Immunization'],
-  //       patients: [
-  //         {
-  //           resource: {
-  //             resourceType: 'Patient',
-  //             id: '9999999111'
-  //           }
-  //         }
-  //       ]
-  //     };
-  //     const actual = await resourceRestService.getPatientResources(postData, token);
+  //     const nhsNumber = 9999999000;
+  //     const actual = await resourceRestService.getPatients(nhsNumber, token);
 
   //     expect(actual).toEqual(expected);
   //     expect(nock).toHaveBeenDone();
@@ -248,36 +133,16 @@ describe('ripple-cdr-lib/lib/services/resourceRestService', () => {
   //       code: 500
   //     };
 
-  //     nock('https://devgateway.discoverydataservice.net/data-assurance')
-  //       .post('/api/fhir/resources', JSON.stringify({
-  //         resources: ['Immunization'],
-  //         patients: [
-  //           {
-  //             resource: {
-  //               resourceType: 'Patient',
-  //               id: '9999999111'
-  //             }
-  //           }
-  //         ]
-  //       }))
+  //     nock('https://10.153.7.80:444/FHIRService')
+  //       .get('/Patient?identifier=9999999000')
   //       .matchHeader('authorization', 'Bearer testToken')
   //       .replyWithError({
   //         message: 'custom error',
   //         code: 500
   //       });
 
-  //     const postData = {
-  //       resources: ['Immunization'],
-  //       patients: [
-  //         {
-  //           resource: {
-  //             resourceType: 'Patient',
-  //             id: '9999999111'
-  //           }
-  //         }
-  //       ]
-  //     };
-  //     const actual = resourceRestService.getPatientResources(postData, token);
+  //     const nhsNumber = 9999999000;
+  //     const actual = resourceRestService.getPatients(nhsNumber, token);
 
   //     await expectAsync(actual).toBeRejectedWith(expected);
   //     expect(nock).toHaveBeenDone();
@@ -298,8 +163,6 @@ describe('ripple-cdr-lib/lib/services/resourceRestService', () => {
 
       nock('https://10.153.7.80:444/FHIRService')
         .get('/Immunization/48f8c9e3-7bae-4418-b896-2423957f3c33')
-      // nock('https://devgateway.discoverydataservice.net/data-assurance')
-      //   .get('/api/fhir/reference?reference=Immunization%2F48f8c9e3-7bae-4418-b896-2423957f3c33')
         .matchHeader('authorization', 'Bearer testToken')
         .reply(200, JSON.stringify(data));
 

@@ -76,11 +76,8 @@ function getLocationRef(resource) {
 }
 
 function getPractitionerRef(resource) {
-  
-  console.log("in getPractitionerReference")
-  console.log(resource)
 
-  let practitionerReference = null
+  let practitionerReference = null;
 
   if (resource.resourceType === ResourceName.PATIENT) {
 
@@ -89,46 +86,13 @@ function getPractitionerRef(resource) {
       resource.generalPractitioner.forEach((practitionerItem) => {
         
         if (practitionerItem.reference.indexOf('Practitioner') > -1) {
-          practitionerReference = practitionerItem.reference
+          practitionerReference = practitionerItem.reference;
         }
-      })
+      });
     }
   }
 
-  return practitionerReference
-  
-  // if (resource.informationSource) {
-  //   return resource.informationSource.reference;
-  // }
-
-  // if (resource.recorder) {
-  //   return resource.recorder.reference;
-  // }
-
-  // if (resource.asserter) {
-  //   return resource.asserter.reference;
-  // }
-
-  // if (resource.careProvider) {
-  //   let practitionerRef = false;
-  //   let found = false;
-  //   resource.careProvider.forEach(function(record) {
-  //     if (!found && record.reference.indexOf('Practitioner') !== -1) {
-  //       practitionerRef = record.reference;
-  //       found = true;
-  //     }
-  //   });
-
-  //   return practitionerRef;
-  // }
-
-  // if (resource.performer) {
-  //   return resource.performer.reference;
-  // }
-
-  // return null;
-
-  // debug('bad resource: %j', resource)
+  return practitionerReference;
 }
 
 function getPatientUuid(resource) {
@@ -169,9 +133,6 @@ function parseRef(reference, { separator = '/' } = {}) {
 //@TODO Re check functionality for correct spaces
 function parseName(name) {
 
-  console.log("NAME")
-  console.log(name)
-
   let primaryName = null;
 
   if (Array.isArray(name) && name.length) {
@@ -180,9 +141,6 @@ function parseName(name) {
   else {
     primaryName = name;
   }
-
-  console.log("PRIMARYNAME")
-  console.log(primaryName)
 
   let initName = primaryName && primaryName.text 
     ? primaryName.text
@@ -223,17 +181,13 @@ function getOrganisationRef(resource) {
   }
 
   return organisationRef;
-  // return resource.practitionerRole && resource.practitionerRole[0]
-  //   && resource.practitionerRole[0].managingOrganization && resource.practitionerRole[0].managingOrganization.reference
-  //   ? resource.practitionerRole[0].managingOrganization.reference
-  //   : null;
 }
 
 //@TODO package this piece of code
 function parseAddress(addressArray) {
   let address = 'Not known';
 
-  if (!addressArray.length) {
+  if (!address || !addressArray.length) {
     return address;
   }
 
@@ -287,14 +241,9 @@ function parseTelecom(telecomArray) {
   
   let blankTelecom = '';
 
-  console.log("POHONES")
-  console.log(telecomArray);
+  if (!telecomArray || !Array.isArray(telecomArray)) return blankTelecom;
 
-  if (!telecomArray || !telecomArray.length) return blankTelecom;
-
-  const filteredTelecoms = telecomArray.filter((tel) => tel.system === 'phone' && !tel.period.end && tel.use !== 'old')
-
-  console.log(filteredTelecoms);
+  const filteredTelecoms = telecomArray.filter((tel) => tel.system === 'phone' && !tel.period.end && tel.use !== 'old');
 
   if (!filteredTelecoms.length) return blankTelecom;
 
@@ -307,9 +256,6 @@ function parseTelecom(telecomArray) {
   if (!primaryTelecom) {
     primaryTelecom = filteredTelecoms[0];
   }
-
-  console.log("PRIMARY TELECOM")
-  console.log(primaryTelecom)
 
   if (!primaryTelecom) return blankTelecom;
 

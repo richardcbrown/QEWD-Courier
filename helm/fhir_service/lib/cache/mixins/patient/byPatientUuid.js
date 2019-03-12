@@ -60,7 +60,7 @@ module.exports = (adapter) => {
     set: (patientUuid, patient) => {
       logger.info('mixins/patient|byPatientUuid|exists', { patientUuid, patient });
 
-      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
+      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'data'];
       adapter.putObject(key, patient);
     },
 

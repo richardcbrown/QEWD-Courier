@@ -30,14 +30,10 @@
 
 'use strict';
 
-const GetHeadingDetailCommand = require('./getHeadingDetailCommand');
-const GetHeadingSummaryCommand = require('./getHeadingSummaryCommand');
 const GetDemographicsCommand = require('./getDemographicsCommand');
 const baseCommand = require('./baseCommand');
 
 module.exports = {
-  GetHeadingDetailCommand,
-  GetHeadingSummaryCommand,
   GetDemographicsCommand,
   baseCommand
 };

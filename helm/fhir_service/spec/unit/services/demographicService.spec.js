@@ -46,7 +46,6 @@ describe('ripple-cdr-lib/lib/services/demographicService', () => {
   let patientCache;
 
   function configureMocks() {
-    resourceService.getOrganisationLocation.and.returnValue({});
 
     patientCache.byNhsNumber.getPatientUuid.and.returnValue('7bb44952-60dd-4ce8-9bbd-f0b56c80a260');
     patientCache.byPatientUuid.get.and.returnValue({
@@ -54,21 +53,28 @@ describe('ripple-cdr-lib/lib/services/demographicService', () => {
         { text: 'John Doe' }
       ],
       gender: 'male',
-      telecom : '+44 58584 5475477',
-      birthDate: '1990-01-01T12:00:00Z'
+      telecom : [{
+        system: 'phone',
+        use: 'home',
+        period: {
+          start: '1990-01-01T12:00:00Z'
+        },
+        value: '+44 58584 5475477'
+      }],
+      birthDate: '1990-01-01T12:00:00Z',
+      address: []
     });
     patientCache.byPatientUuid.getPractitionerUuid.and.returnValue('3f2a728b-eda5-4c16-b67d-afeacaacbb1c');
-    resourceCache.byUuid.get.and.returnValue({
+    resourceCache.byUuid.getRelatedUuid.and.returnValue('1a30d00b-7fe5-44d5-bf18-9909e6fdacd2');
+    resourceCache.byUuid.get.and.returnValues({
       name: {
         text: 'Jane Doe'
-      },
-      practitionerRole: [
-        {
-          managingOrganization: {
-            reference: 'Organization/1a30d00b-7fe5-44d5-bf18-9909e6fdacd2'
-          }
-        }
-      ]
+      }
+    },
+    {
+      resourceType: 'Organization',
+      id: '1a30d00b-7fe5-44d5-bf18-9909e6fdacd2',
+      address: []
     });
   }
 
@@ -106,7 +112,7 @@ describe('ripple-cdr-lib/lib/services/demographicService', () => {
           id: 9999999000,
           nhsNumber: 9999999000,
           gender: 'male',
-          phone: '+44 58584 5475477',
+          telephone: '+44 58584 5475477',
           name: 'John Doe',
           dateOfBirth: 631195200000,
           gpName: 'Jane Doe',
@@ -121,15 +127,16 @@ describe('ripple-cdr-lib/lib/services/demographicService', () => {
       expect(patientCache.byPatientUuid.get).toHaveBeenCalledWith('7bb44952-60dd-4ce8-9bbd-f0b56c80a260');
       expect(patientCache.byPatientUuid.getPractitionerUuid).toHaveBeenCalledWith('7bb44952-60dd-4ce8-9bbd-f0b56c80a260');
       expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Practitioner', '3f2a728b-eda5-4c16-b67d-afeacaacbb1c');
-      expect(resourceService.getOrganisationLocation).toHaveBeenCalledWith('Organization/1a30d00b-7fe5-44d5-bf18-9909e6fdacd2');
+      expect(resourceCache.byUuid.getRelatedUuid).toHaveBeenCalledWith('Practitioner', '3f2a728b-eda5-4c16-b67d-afeacaacbb1c', 'Organization');
+      expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Organization', '1a30d00b-7fe5-44d5-bf18-9909e6fdacd2');
 
-      expect(discoveryCache.deleteAll).toHaveBeenCalled();
+      //expect(discoveryCache.deleteAll).toHaveBeenCalled();
       expect(demographicCache.byNhsNumber.set).toHaveBeenCalledWith(9999999000, {
         demographics: {
           id: 9999999000,
           nhsNumber: 9999999000,
           gender: 'male',
-          phone: '+44 58584 5475477',
+          telephone: '+44 58584 5475477',
           name: 'John Doe',
           dateOfBirth: 631195200000,
           gpName: 'Jane Doe',
