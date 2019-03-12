@@ -34,28 +34,14 @@ const { getResponseError } = require('../../lib/errors');
 
 const request = require('request')
 
+request.debug = true
+
+
 /**
  * @param  {Object} args
  * @param  {Function} finished
  */
 module.exports = async function getPatientDemographics (args, finished) {
-
-  // console.log(args)
-  // console.log(args.patientId)
-
-  // request({
-  //   url: `http://10.151.128.117:57772/dev/yhcrbus/Patient?identifier=NHS Number|${ args.patientId }`,
-  //   method: 'GET'
-  //   // ,
-  //   // headers: {
-  //   //   Authorization: `Bearer ${token}`
-  //   // }
-  // }, (err, response, body) => {
-
-  //   finished(body)
-  // });
-
-  console.log(args)
 
   try {
     const command = new GetDemographicsCommand(args.req.ctx, args.session);
@@ -63,22 +49,10 @@ module.exports = async function getPatientDemographics (args, finished) {
     
     finished(responseObj);
   } catch (err) {
+    console.log(err)
+
     const responseError = getResponseError(err);
     
     finished(responseError);
   }
 };
-
-// 'use strict';
-
-// const request = require('request')
-
-// module.exports = function (args, finished) {
-//     console.log('in handler get patient demographics')
-
-//     console.log(args)
-
-//     console.log(args.patientId)
-
-//     finished({})
-// }

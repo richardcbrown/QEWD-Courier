@@ -33,7 +33,7 @@
 const P = require('bluebird');
 const { logger } = require('../core');
 const { ResourceName } = require('../shared/enums');
-const { getLocationRef, getPractitionerRef, parseRef, getPatientUuid } = require('../shared/utils');
+const { getPractitionerRef, parseRef, getPatientUuid } = require('../shared/utils');
 const debug = require('debug')('ripple-cdr-discovery:services:resource');
 
 class ResourceService {
@@ -128,20 +128,11 @@ class ResourceService {
     const { resourceCache, fetchCache } = this.ctx.cache;
     const { resourceRestService, patientService, tokenService } = this.ctx.services;
 
-    console.log("*************************************")
-    console.log(this.ctx.services)
-    console.log("*************************************")
-    console.log(resourceRestService)
-    console.log(resourceRestService.getPatientResources)
-
     const patientBundle = patientService.getPatientBundle(nhsNumber);
     const postData = {
       resources: [resourceName],
       patients: patientBundle
     };
-
-    console.log("************* postdata")
-    console.log(postData)
 
     const token = await tokenService.get();
     debug('post data: %j', postData);
@@ -211,19 +202,15 @@ class ResourceService {
     // - the practioner is already in the process of being fetched in an earlier iteration
     const { resource } = await this.fetchResource(reference);
 
-    console.log("AFTER FETCH PRACTITIONER")
-
     debug('resource: %j', resource);
     if (!resource) return;
 
     // get PractitionerRole
     const roleResponse = await this.fetchResources("PractitionerRole", `practitioner=${ reference }`);
-
-    console.log("GET PRACTITIONER ROLE")
     
     const practionerRoleBundle = roleResponse.resource;
-    
-    console.log(practionerRoleBundle)
+
+    if (!practionerRoleBundle) return;
 
     // ensure organisation records for practitioner are also fetched and cached
     await P.each(practionerRoleBundle.entry, async (entry) => {
@@ -235,18 +222,9 @@ class ResourceService {
       const organisationRef = role.organization.reference;
       const organisationResponse = await this.fetchResource(organisationRef);
 
-      console.log("ORG RESPONSE")
-      console.log(organisationResponse.resource)
-
       if (organisationResponse.resource) {
         resourceCache.byUuid.setRelatedUuid('Practitioner', resource.id, 'Organization', organisationResponse.resource.id)
       }
-      // if (!resource) return;
-
-      // if (resourceName === ResourceName.PATIENT) {
-      //   const locationRef = getLocationRef(resource);
-      //   await this.fetchResource(locationRef);
-      // }
     });
   }
 
@@ -303,12 +281,8 @@ class ResourceService {
   async fetchResources(resourceType, query) {
     logger.info('services/resourceService|fetchResources', { query });
 
-    //const { resourceName, uuid } = parseRef(reference);
     const { fetchCache, resourceCache } = this.ctx.cache;
 
-    console.log(resourceCache)
-
-    //TODO - caching on query
     const exists  = resourceCache.byQuery.exists(resourceType, query);
     if (exists) {
       return {
@@ -347,24 +321,25 @@ class ResourceService {
    * @param  {string} reference
    * @return {Object}
    */
-  getOrganisationLocation(reference) {
-    logger.info('cache/resourceService|getOrganisationLocation', { reference });
+  // @TODO - address is attached to Organization object - might not be needed
+  // getOrganisationLocation(reference) {
+  //   logger.info('cache/resourceService|getOrganisationLocation', { reference });
 
-    const organisationUuid = parseRef(reference).uuid;
-    if (!organisationUuid) return null;
+  //   const organisationUuid = parseRef(reference).uuid;
+  //   if (!organisationUuid) return null;
 
-    const { resourceCache } = this.ctx.cache;
-    const organisation = resourceCache.byUuid.get(ResourceName.ORGANIZATION, organisationUuid);
-    debug('organisation: %j', organisation);
-    if (!organisation || !organisation.extension) return null;
+  //   const { resourceCache } = this.ctx.cache;
+  //   const organisation = resourceCache.byUuid.get(ResourceName.ORGANIZATION, organisationUuid);
+  //   debug('organisation: %j', organisation);
+  //   if (!organisation || !organisation.extension) return null;
 
-    const locationRef = getLocationRef(organisation);
-    const locationUuid = parseRef(locationRef).uuid;
-    const location = resourceCache.byUuid.get(ResourceName.LOCATION, locationUuid);
-    debug('location: %j', location);
+  //   const locationRef = getLocationRef(organisation);
+  //   const locationUuid = parseRef(locationRef).uuid;
+  //   const location = resourceCache.byUuid.get(ResourceName.LOCATION, locationUuid);
+  //   debug('location: %j', location);
 
-    return location;
-  }
+  //   return location;
+  // }
 
   /**
    * Gets resource practioner

@@ -63,9 +63,6 @@ class DemographicService {
     const practitionerOrganisationUuid = resourceCache.byUuid.getRelatedUuid(ResourceName.PRACTITIONER, practitionerUuid, 'Organization');
     const practitionerOrganisation = resourceCache.byUuid.get('Organization', practitionerOrganisationUuid)
 
-    console.log('Practitioner Org')
-    console.log(practitionerOrganisation)
-
     const demographics = {};
 
     demographics.id = nhsNumber;

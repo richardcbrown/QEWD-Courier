@@ -47,8 +47,10 @@ function parseJsonFormatter(result) {
 }
 
 function requestAsync(args, { formatter } = {}) {
+
   return new Promise((resolve, reject) => {
     request(args, (err, response, body) => {
+
       if (err) return reject(err);
 
       debug('body: %s', body);
@@ -92,12 +94,8 @@ class ResourceRestService {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
-        "accept": "application/fhir+json; charset=UTF-8"
+        'accept': 'application/fhir+json; charset=UTF-8'
       }
-      // ,
-      // headers: {
-      //   Authorization: `Bearer ${token}`
-      // }
     };
 
     debug('args: %j', args);
@@ -171,9 +169,6 @@ class ResourceRestService {
     debug('args: %j', args);
 
     const result = await requestAsync(args);
-
-    console.log("getResourcesResult")
-    console.log(result)
 
     return result === ''
       ? {}
