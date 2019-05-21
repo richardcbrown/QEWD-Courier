@@ -68,8 +68,12 @@ var returnArrayResponses = {
 module.exports = function(req, res, next) {
 
   // a response message coming back from the worker will be saved in res.locals.message
-
   var messageObj = res.locals.message;
+
+  if (messageObj.meta) {
+    res.cookie('META', messageObj.meta);
+    delete messageObj.meta;
+  }
 
   if (messageObj.oidc_redirect) {
 

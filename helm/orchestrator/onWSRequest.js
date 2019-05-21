@@ -52,6 +52,9 @@
 
 */
 
+const jwt = require('jwt-simple');
+const config = require('../configuration/config.json');
+
 module.exports = function(req, res, next) {
 
   // Apply CSRF protection to all incoming requests
@@ -71,6 +74,36 @@ module.exports = function(req, res, next) {
     }
     if (req.headers['x-requested-with'] !== 'XMLHttpRequest') {
       return sendError('Invalid request: x-requested-with header invalid');
+    }
+  }
+
+  if (!req.url.startsWith('/auth') && !req.url.startsWith('/initialise')) {
+    console.log('URL');
+    console.log(req.url);
+    
+    let termsSigned = false;
+    let meta
+
+    console.log(req.headers.cookie)
+
+    if (req.headers.cookie && req.headers.cookie.indexOf('META=') !== -1) {
+      try {
+        
+        meta = req.headers.cookie.split('META=')[1];
+        meta = meta.split(';')[0];
+        const decoded = jwt.decode(meta, config.jwt.secret);
+
+        termsSigned = decoded.signedTerms;
+      } catch (e) {
+        console.log(e)
+        return res.send({ status: 'sign_terms' });
+      }      
+    } 
+    
+    if (!termsSigned) {
+      return res.send({ status: 'sign_terms' });
+    } else {
+      req.headers.meta = meta;
     }
   }
 
