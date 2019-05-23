@@ -1,47 +1,8 @@
 [
   {
-    "uri": "/api/initialise",
-    "method": "GET",
-    "handler": "initialise",
-    "on_microservice": "auth_service",
-    "authenticate": false
-  },
-  {
     "uri": "/api/application",
     "method": "GET",
     "handler": "getApplication"
-  },
-  {
-    "uri": "/api/user",
-    "method": "GET",
-    "handler": "getUser",
-    "on_microservice": "auth_service"
-  },
-  {
-    "uri": "/api/auth/token",
-    "method": "GET",
-    "handler": "oidc_callback",
-    "on_microservice": "auth_service",
-    "authenticate": false
-  },
-  {
-    "uri": "/api/demographics/:patientId",
-    "method": "GET",
-    "handler": "getPatientDemographics",
-    "on_microservice": "discovery_service",
-    "from_microservices": [
-      "orchestrator",
-      "openehr_service"
-    ]
-  },
-  {
-    "uri": "/api/discovery/:patientId/:heading",
-    "method": "GET",
-    "handler": "getDiscoveryPatientHeading",
-    "on_microservice": "discovery_service",
-    "from_microservices": [
-      "openehr_service"
-    ]
   },
   {
     "uri": "/api/openehr/check",
@@ -50,21 +11,21 @@
     "on_microservice": "openehr_service"
   },
   {
-    "uri": "/api/logout",
-    "method": "GET",
-    "handler": "logout",
-    "on_microservice": "auth_service"
-  },
-  {
     "uri": "/api/feeds",
-    "method": "GET",
-    "handler": "getFeedsSummary",
+    "method": "POST",
+    "handler": "postFeed",
     "on_microservice": "openehr_service"
   },
   {
     "uri": "/api/feeds/:sourceId",
-    "method": "GET",
-    "handler": "getFeedDetail",
+    "method": "PUT",
+    "handler": "putFeed",
+    "on_microservice": "openehr_service"
+  },
+  {
+    "uri": "/api/patients/:patientId/:heading",
+    "method": "POST",
+    "handler": "postPatientHeading",
     "on_microservice": "openehr_service"
   },
   {
@@ -74,33 +35,15 @@
     "on_microservice": "openehr_service"
   },
   {
-    "uri": "/api/patients/:patientId/synopsis/:heading",
+    "uri": "/api/patients/:patientId/detail/:heading",
     "method": "GET",
-    "handler": "getPatientHeadingSynopsis",
+    "handler": "getPatientHeadingSummary",
     "on_microservice": "openehr_service"
   },
   {
     "uri": "/api/patients/:patientId/synopsis/top3Things/latest",
     "method": "GET",
     "handler": "getPatientTop3ThingsLatest",
-    "on_microservice": "openehr_service"
-  },
-  {
-    "uri": "/api/patients/:patientId/respectforms",
-    "method": "GET",
-    "handler": "getRespectFormVersions",
-    "on_microservice": "openehr_service"
-  },
-  {
-    "uri": "/api/patients/:patientId/respectforms/:sourceId/:version",
-    "method": "GET",
-    "handler": "getRespectForm",
-    "on_microservice": "openehr_service"
-  },
-  {
-    "uri": "/api/patients/:patientId/:heading",
-    "method": "GET",
-    "handler": "getPatientHeadingSummary",
     "on_microservice": "openehr_service"
   },
   {

@@ -1,7 +1,6 @@
 module.exports = function(message, jwt, forward, sendBack) {
   
-  console.log("Accept Terms onMSResponse");
-  console.log(message);
+  console.log('api/acceptTerms|onMSResponse');
   
   var apiRequest = {
     path: `/api/fhir/postPatientConsent`,
@@ -10,9 +9,17 @@ module.exports = function(message, jwt, forward, sendBack) {
   };
 
   forward(apiRequest, jwt, function(responseObj) {
-    
-    console.log('FHIR POST CONSENT RESPONSE')
-    console.log(responseObj)
+
+    console.log('api/acceptTerms|onMSResponse|postPatientConsent');
+
+    if (responseObj.message.error) {
+
+      console.log('api/acceptTerms|onMSResponse|err', JSON.stringify(responseObj.message.error));
+
+      return sendBack(responseObj);
+    }
+
+    console.log('api/acceptTerms|onMSResponse|postPatientConsent|complete');
 
     sendBack({ message: { status: 'login' } });
   });

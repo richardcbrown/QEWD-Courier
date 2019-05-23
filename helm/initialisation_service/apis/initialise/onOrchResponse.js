@@ -28,10 +28,17 @@
 
 module.exports = async function(responseObj, request, forwardToMS, sendResponse, getJWTproperty) {
 
-  console.log("Orchestrator response obj")
-  console.log(responseObj)
+  console.log('api/initialise|onOrchResponse');
+
+  if (responseObj.message.error) {
+    console.log('api/initialise|onOrchResponse|err', JSON.stringify(responseObj.message.error));
+    return sendResponse(responseObj);
+  }
 
   if (!responseObj.message.authenticated) {
+
+    console.log('api/initialise|onOrchResponse|notAuthenticated');
+
     message = {
       path: '/api/auth/redirect',
       method: 'GET'
@@ -50,6 +57,7 @@ module.exports = async function(responseObj, request, forwardToMS, sendResponse,
   }
 
   if (responseObj.message.status && responseObj.message.status === 'sign_terms') {
+    console.log('api/initialise|onOrchResponse|signTerms');
     return sendResponse(responseObj);
   }
 
@@ -67,8 +75,6 @@ module.exports = async function(responseObj, request, forwardToMS, sendResponse,
   console.log('** response = ' + JSON.stringify(response, null, 2));
 
   var message;
-
-
 
   if (!response.error && response.authenticated) {
     console.log('** no error, but authenticated');

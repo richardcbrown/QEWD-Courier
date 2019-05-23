@@ -78,13 +78,11 @@ module.exports = function(req, res, next) {
   }
 
   if (!req.url.startsWith('/auth') && !req.url.startsWith('/initialise')) {
-    console.log('URL');
-    console.log(req.url);
     
+    console.log('onWSRequest|checkTerms');
+
     let termsSigned = false;
     let meta
-
-    console.log(req.headers.cookie)
 
     if (req.headers.cookie && req.headers.cookie.indexOf('META=') !== -1) {
       try {
@@ -95,14 +93,16 @@ module.exports = function(req, res, next) {
 
         termsSigned = decoded.signedTerms;
       } catch (e) {
-        console.log(e)
+        console.log('onWSRequest|checkTerms|err', e)
         return res.send({ status: 'sign_terms' });
       }      
     } 
     
     if (!termsSigned) {
+      console.log('onWSRequest|checkTerms|signTerms');
       return res.send({ status: 'sign_terms' });
     } else {
+      console.log('onWSRequest|checkTerms|termsSigned');
       req.headers.meta = meta;
     }
   }
@@ -115,7 +115,9 @@ module.exports = function(req, res, next) {
       var token = req.headers.cookie.split('JSESSIONID=')[1];
       token = token.split(';')[0];
       console.log('token = ' + token);
-      req.headers.authorization = 'Bearer ' + token;
+      if (token) {
+        req.headers.authorization = 'Bearer ' + token;
+      }
       delete req.headers.cookie;
     }
   }

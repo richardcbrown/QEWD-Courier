@@ -1,12 +1,7 @@
 
-const { signed } = require('../../lib/test');
-
 module.exports = function(args, finished) { 
-  console.log("INDEX")
+  console.log('api/initialise|invoke');
 
-  console.log(signed())
-
-  var validJWT;
   var authenticated = false;
 
   if (args.req.headers.authorization) {
@@ -18,9 +13,16 @@ module.exports = function(args, finished) {
     };
 
     authenticated = this.jwt.handlers.validateRestRequest.call(this, args.req, fin, true, true);
-    console.log('*** validJWT = ' + validJWT);
+    
+    if (!authenticated) {
+
+      console.log('api/initialise|invoke|err|jwtError');
+
+      return finished({ error :"Invalid JWT: Error: Token expired", status: {code:403, text: "Forbidden"}})
+    }
   }
 
+  console.log('api/initialise|invoke|complete');
 
   return finished({ ok: true, authenticated });
 }

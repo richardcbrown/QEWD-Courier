@@ -1,12 +1,15 @@
 {
+  "initialisation_service": {
+    "policies": "Test Helm Terms,Test Helm Privacy"
+  },
   "oidc_client": {
     "hosts": {
-      "oidc_server": "https://onelondon.ripple.foundation:443",
-      "orchestrator": "https://onelondon.ripple.foundation:443"
+      "oidc_server": "http://xxxxx",
+      "orchestrator": "http://xxxxx"
     },
     "type": "OpenID Connect",
-    "client_id": "foo",
-    "client_secret": "bar",
+    "client_id": "xxxxx",
+    "client_secret": "xxxxx",
     "scope": {
       "login": "openid"
     },
@@ -29,48 +32,12 @@
     "cookie_name": "JSESSIONID",
     "logout_approach": "client"
   },
-  "DDS": {
-    "enabled": true,
-    "auth": {
-      "host": "https://devauth.discoverydataservice.net",
-      "path": "/auth/realms/endeavour/protocol/openid-connect/token",
-      "username": "xxxxxxxx",
-      "password": "yyyyyyyyyyy",
-      "client_id": "eds-data-checker",
-      "grant_type": "password"
-    },
-    "api": {
-      "host": "https://devgateway.discoverydataservice.net/data-assurance",
-      "paths": {
-        "getPatientsByNHSNumber": "/api/fhir/patients",
-        "getPatientResources": "/api/fhir/resources",
-        "getResource": "/api/fhir/reference"
-      }
-    },
-    "headings" : {
-      "medications": "MedicationStatement",
-      "allergies": "AllergyIntolerance",
-      "problems": "Condition",
-      "vaccinations": "Immunization"
-    },
-    "transformations": {
-      "pulsetile": {
-        "source": "openEHR",
-        "destination": "Pulsetile"
-      },
-      "defaults": {
-        "source": "discovery",
-        "destination": "openehr"
-      }
-    },
-    "mode": "test"
-  },
   "openehr": {
     "servers": {
       "ethercis": {
-        "url": "http://ethercis1.3-test.ripple.foundation:8080",
-        "username": "xxxxxx",
-        "password": "yyyyyyy",
+        "url": "xxxxx",
+        "username": "xxxxx",
+        "password": "xxxxx",
         "platform": "ethercis"
       }
     },

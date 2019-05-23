@@ -1,12 +1,14 @@
 const js = require('jwt-simple');
-const config = require('../../configuration/config.json');
+const config = require('../../../configuration/config.json');
 
 module.exports = function(message, jwt, forward, sendBack) {
   
-  console.log('in initialise onMSResponse')
-  console.log(message)
+  console.log('api/initialise|onMSResponse');
 
   if (!message.authenticated) {
+
+    console.log('api/initialise|onMSResponse|notAuthenticated');
+
     return false;
   }
 
@@ -20,21 +22,34 @@ module.exports = function(message, jwt, forward, sendBack) {
     method: 'GET'
   };
   
+  console.log('api/initialise|onMSResponse|getPolicies');
+
   forward(apiRequest, jwt, function(responseObj) {
 
-    console.log("Policy Response")
-    console.log(responseObj);
+    console.log('api/initialise|onMSResponse|getPolicies|response');
+
+    if (responseObj.message.error) {
+
+      console.log('api/initialise|onMSResponse|getPolicies|err', JSON.stringify(responseObj.message.error));
+
+      return sendBack(responseObj);
+    }
+
+    console.log('api/initialise|onMSResponse|getConsent');
 
     forward(consentRequest, jwt, function(consentResponse) {
       
-      console.log("Consent Response")
-      console.log(consentResponse);
-      console.log("Policies")
-      console.log(responseObj.message.resources)
+      console.log('api/initialise|onMSResponse|getConsent|response');
+
+      if (consentResponse.message.error) {
+        console.log('api/initialise|onMSResponse|getConsent|response|err', JSON.stringify(consentResponse.message.error));
+
+        return sendBack(responseObj);
+      }
 
       if (!consentResponse.message.resources.length) {
 
-        console.log('Terms need to be signed')
+        console.log('api/initialise|onMSResponse|getConsent|response|signTerms|noConsent');
 
         sendBack({ message: { ...message, status: 'sign_terms' } });
       } else {
@@ -46,9 +61,6 @@ module.exports = function(message, jwt, forward, sendBack) {
 
         policies.forEach(policy => {
           consents.forEach(consent => {
-
-            console.log(consent.policyRule);
-
             if (consent.policyRule === `Policy/${ policy.id }`) {
               acceptedPolicies.push(policy.id);
             }
@@ -63,18 +75,14 @@ module.exports = function(message, jwt, forward, sendBack) {
           }
         })
 
-        console.log('Accepted policies')
-        console.log(acceptedPolicies)
-
         if (!allAccepted) {
 
-          console.log('Terms need to be signed')
+          console.log('api/initialise|onMSResponse|getConsent|response|notAllTermsAccepted');
 
           sendBack({ message: { ...message, status: 'sign_terms' } });
         } else {
 
-          console.log("JWT")
-          console.log(jwt)
+          console.log('api/initialise|onMSResponse|getConsent|response|allTermsAccepted');
 
           const meta = js.encode({ signedTerms: true }, config.jwt.secret);
 
