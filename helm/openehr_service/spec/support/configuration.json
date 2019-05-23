@@ -1,0 +1,84 @@
+{
+  "oidc_client": {
+    "hosts": {
+      "oidc_server": "http://oidc.ripple.foundation:8000"
+    },
+    "urls": {
+      "oidc_server": {
+        "introspection_endpoint": "/openid/token/introspect"
+      }
+    }
+  },
+  "DDS": {
+    "enabled": true
+  },
+  "openehr": {
+    "servers": {
+      "marand": {
+        "url": "https://test.operon.systems",
+        "username": "foo",
+        "password": "123456",
+        "platform": "marand"
+      },
+      "ethercis": {
+        "url": "http://178.62.71.220:8080",
+        "username": "bar",
+        "password": "quux",
+        "platform": "ethercis"
+      }
+    },
+    "sites": {
+      "ltht": {
+        "client_id": "xxxxxx",
+        "client_secret": "yyyyyyyyyy"
+      }
+    },
+    "defaultPostHost": "ethercis",
+    "synopsis": {
+      "headings": [
+        "procedures",
+        "vaccinations"
+      ],
+      "maximum": 2
+    },
+    "paths": {
+      "jumper_templates": "/path/to/jumper/templates/",
+      "openEHR_modules": "/path/to/openehr/src/"
+    },
+    "headings": {
+      "allergies": {
+        "template": {
+          "name": "IDCR - Adverse Reaction List.v1"
+        },
+        "fhir": {
+          "name": "AllergyIntolerance"
+        },
+        "synopsisField": "cause",
+        "summaryTableFields": ["cause", "reaction"]
+      },
+      "counts": true,
+      "problems": {
+        "template": {
+          "name": "IDCR - Problem List.v1"
+        },
+        "fhir": {
+          "name": "Condition"
+        },
+        "synopsisField": "problem",
+        "summaryTableFields": ["problem", "dateOfOnset"]
+      },
+      "procedures": true,
+      "proms-test": true,
+      "vaccinations": {
+        "template": {
+          "name": "IDCR - Immunisation summary.v0"
+        },
+        "synopsisField": "vaccinationName",
+        "summaryTableFields": ["vaccinationName", "dateCreated"]
+      }
+    },
+    "documentNames": {
+      "jumperTemplateFields": "CustomOpenEHRJumper"
+    }
+  }
+}

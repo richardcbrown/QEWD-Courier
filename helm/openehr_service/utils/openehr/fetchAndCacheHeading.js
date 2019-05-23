@@ -8,7 +8,7 @@
  | http://rippleosi.org                                                     |
  | Email: code.custodian@rippleosi.org                                      |
  |                                                                          |
- | Author: Rob Tweed, M/Gateway Developments Ltd                            |
+ | Author: Alexey Kucherenko <alexei.kucherenko@gmail.com>                  |
  |                                                                          |
  | Licensed under the Apache License, Version 2.0 (the "License");          |
  | you may not use this file except in compliance with the License.         |
@@ -23,90 +23,23 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  9 February 2019
+  16 March 2019
 
 */
 
-var openehr_config = require('/opt/qewd/mapped/configuration/global_config.json').openehr;
+'use strict';
 
-var openEHR = require('./openEHR');
-var getHeadingFromOpenEHRServer = require('./getHeadingFromOpenEHRServer');
-var mapNHSNoByHost = require('./mapNHSNoByHost');
-var servers;
-var noOfServers;
+const { ExecutionContext, logger } = require('../../lib/core');
 
 function fetchAndCacheHeading(patientId, heading, session, callback) {
+  const ctx = ExecutionContext.fromQewdSession(this, session);
+  const { headingService } = ctx.services;
 
-  // fetch a heading from each host, unless the heading for that host is already cached
-  //  A heading won't be cached for a host if:
-  //    a) it's the first time it's being accessed by the user; or 
-  //    b) a new record was posted to the host by any user
-
-  var cachedHeading = session.data.$(['headings', 'byPatientId', patientId, heading, 'byHost']);
-
-  if (!servers) {
-    // first time this module is used in the worker
-    servers = openehr_config.servers;
-    noOfServers = 0;
-    for (host in servers) {
-      noOfServers++;
-    }
-    openEHR.init.call(this);
-  }
-
-  var count = 0;
-  var host;
-  var self = this;
-
-  for (host in servers) {  
-    if (cachedHeading.$(host).exists) {
-      count++;
-      console.log('startSession a - process ' + process.pid + ': count = ' + count + '; ' + noOfServers + ' servers');
-      if (count === noOfServers) {
-        if (callback) callback({ok: true});
-        return;
-      }
-    }
-    else {
-      // fetch heading from host and cache it
-      (function(host) {
-        openEHR.startSession(host, session, function(openEhrSession) {
-          console.log('\nFetchAndCacheHeading: ' + host + '; startSession callback - OpenEhr session = ' + JSON.stringify(openEhrSession));
-          if (!openEhrSession || !openEhrSession.id) {
-            console.log('\nUnable to establish session on ' + host + '; worker ' + process.pid);
-            count++;
-            console.log('startSession b - process ' + process.pid + ': count = ' + count + '; ' + noOfServers + ' servers');
-            if (count === noOfServers) {
-              if (callback) callback({ok: true});
-            }
-          }
-          else {
-            mapNHSNoByHost.call(self, patientId, host, openEhrSession, function(ehrId) {
-              if (ehrId) {
-                getHeadingFromOpenEHRServer.call(self, patientId, heading, host, session, openEhrSession, function() {
-                  openEHR.stopSession(host, openEhrSession.id, session);
-                  count++;
-                  console.log('startSession c - process ' + process.pid + ': count = ' + count + '; ' + noOfServers + ' servers');
-                  if (count === noOfServers) {
-                    if (callback) callback({ok: true});
-                    return;
-                  }
-                });
-              }
-              else {
-                count++;
-                console.log('startSession d - process ' + process.pid + ': count = ' + count + '; ' + noOfServers + ' servers');
-                if (count === noOfServers) {
-                  if (callback) callback({ok: true});
-                  return;
-                }
-              }
-            });
-          }
-        });
-      }(host));
-    }
-  }
+  headingService.fetchOne(patientId, heading)
+    .then((resultObj) => callback(resultObj))
+    .catch(err => {
+      logger.error('utils/openehr/fetchAndCacheHeading|err:', err);
+    });
 }
 
 module.exports = fetchAndCacheHeading;

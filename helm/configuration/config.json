@@ -8,7 +8,27 @@
   },
   "microservices": [
     {
-      "name": "auth_service",
+      "name": "fhir_service",
+      "apis": {
+        "import": true
+      },
+      "qewd": {
+        "serverName": "SOS MPI MicroService",
+        "poolSize": 4
+      }
+    },
+    {
+      "name": "initialisation_service",
+      "qewd": {
+        "serverName": "Initialisation Service",
+        "poolSize": 4
+      }
+    },
+    {
+      "name": "oidc_client",
+      "apis": {
+        "import": true
+      },
       "qewd": {
         "serverName": "Authentication MicroService",
         "poolSize": 4
@@ -18,13 +38,6 @@
       "name": "openehr_service",
       "qewd": {
         "serverName": "OpenEHR MicroService",
-        "poolSize": 4
-      }
-    },
-    {
-      "name": "discovery_service",
-      "qewd": {
-        "serverName": "Discovery MicroService",
         "poolSize": 4
       }
     }
