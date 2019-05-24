@@ -60,72 +60,101 @@
     "authenticate": false
   },
   {
-    "uri": "/discovery/merge/:heading",
+    "uri": "/api/initialise",
     "method": "GET",
-    "handler": "mergeDiscoveryData",
-    "on_microservice": "openehr_service",
+    "handler": "initialise",
+    "authenticate": false,
+    "on_microservice": "initialisation_service"
+  },
+  {
+    "uri": "/api/initialise/terms/accept",
+    "method": "POST",
+    "handler": "acceptTerms",
+    "on_microservice": "initialisation_service"
+  },
+  {
+    "uri": "/api/initialise/terms/check",
+    "method": "GET",
+    "handler": "checkTerms",
+    "on_microservice": "initialisation_service"
+  },
+  {
+    "uri": "/api/initialise/terms",
+    "method": "GET",
+    "handler": "getTerms",
+    "on_microservice": "initialisation_service"
+  },
+  {
+    "uri": "/api/demographics/:patientId",
+    "method": "GET",
+    "handler": "getPatientDemographics",
+    "on_microservice": "fhir_service"
+  },
+  {
+    "uri": "/api/fhir/getPolicies",
+    "method": "GET",
+    "handler": "getPolicies",
     "from_microservices": [
-      "openehr_service"
-    ]
+      "initialisation_service"
+    ],
+    "on_microservice": "fhir_service"
   },
   {
-    "uri": "/api/feeds",
+    "uri": "/api/fhir/getPatientConsent",
+    "method": "GET",
+    "handler": "getPatientConsent",
+    "from_microservices": [
+      "initialisation_service"
+    ],
+    "on_microservice": "fhir_service"
+  },
+  {
+    "uri": "/api/fhir/postPatientConsent",
     "method": "POST",
-    "handler": "postFeed",
-    "on_microservice": "openehr_service"
+    "handler": "postPatientConsent",
+    "from_microservices": [
+      "initialisation_service"
+    ],
+    "on_microservice": "fhir_service"
   },
   {
-    "uri": "/api/patients/:patientId/respectforms",
-    "method": "POST",
-    "handler": "postRespectForm",
-    "on_microservice": "openehr_service"
+    "uri": "/auth/redirect",
+    "method": "GET",
+    "handler": "getRedirect",
+    "authenticate": false,
+    "on_microservice": "oidc_client"
   },
   {
-    "uri": "/api/patients/:patientId/respectforms/:sourceId",
-    "method": "POST",
-    "handler": "postRespectFormVersion",
-    "on_microservice": "openehr_service"
+    "uri": "/api/auth/redirect",
+    "method": "GET",
+    "handler": "getRedirect",
+    "authenticate": false,
+    "on_microservice": "oidc_client"
   },
   {
-    "uri": "/api/patients/:patientId/:heading",
-    "method": "POST",
-    "handler": "postPatientHeading",
-    "on_microservice": "openehr_service"
+    "uri": "/auth/token",
+    "method": "GET",
+    "handler": "oidc_callback",
+    "authenticate": false,
+    "on_microservice": "oidc_client"
   },
   {
-    "uri": "/api/feeds/:sourceId",
-    "method": "PUT",
-    "handler": "putFeed",
-    "on_microservice": "openehr_service"
+    "uri": "/api/auth/token",
+    "method": "GET",
+    "handler": "oidc_callback",
+    "authenticate": false,
+    "on_microservice": "oidc_client"
   },
   {
-    "uri": "/api/patients/:patientId/respectforms/:sourceId/:version",
-    "method": "PUT",
-    "handler": "putRespectFormVersion",
-    "on_microservice": "openehr_service"
+    "uri": "/auth/logout",
+    "method": "GET",
+    "handler": "logout",
+    "on_microservice": "oidc_client"
   },
   {
-    "uri": "/api/patients/:patientId/:heading/:sourceId",
-    "method": "PUT",
-    "handler": "putPatientHeading",
-    "on_microservice": "openehr_service"
-  },
-  {
-    "uri": "/api/patients/:patientId/:heading/:sourceId",
-    "method": "DELETE",
-    "handler": "deletePatientHeading",
-    "on_microservice": "openehr_service"
-  },
-  {
-    "uri": "/api/discovery/revert/all",
-    "method": "DELETE",
-    "handler": "revertAllDiscoveryData",
-    "on_microservice": "openehr_service"
-  },
-  {
-    "uri": "/api/discovery/revert/:patientId/:heading",
-    "method": "DELETE",
-    "handler": "revertDiscoveryData",
-    "on_microservice": "openehr_service"
+    "uri": "/api/auth/logout",
+    "method": "GET",
+    "handler": "logout",
+    "on_microservice": "oidc_client"
   }
 ]

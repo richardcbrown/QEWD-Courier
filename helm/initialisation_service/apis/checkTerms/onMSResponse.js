@@ -1,55 +1,51 @@
 const js = require('jwt-simple');
-const config = require('../../../configuration/config.json');
+const globalConfig = require('/opt/qewd/mapped/configuration/global_config.json');
+const config = require('/opt/qewd/mapped/configuration/config.json');
 
 module.exports = function(message, jwt, forward, sendBack) {
   
-  console.log('api/initialise|onMSResponse');
-
-  if (!message.authenticated) {
-
-    console.log('api/initialise|onMSResponse|notAuthenticated');
-
-    return false;
-  }
+  console.log('api/checkTerms|onMSResponse');
 
   const consentRequest = {
     path: `/api/fhir/getPatientConsent`,
     method: 'GET'
   };
-    
+
+  const policies = globalConfig["initialisation_service"].policies;
+
   var apiRequest = {
-    path: `/api/fhir/getPolicies?name=Test`,
+    path: `/api/fhir/getPolicies?name=${ policies }`,
     method: 'GET'
   };
   
-  console.log('api/initialise|onMSResponse|getPolicies');
+  console.log('api/checkTerms|onMSResponse|getPolicies');
 
   forward(apiRequest, jwt, function(responseObj) {
 
-    console.log('api/initialise|onMSResponse|getPolicies|response');
+    console.log('api/checkTerms|onMSResponse|getPolicies|response');
 
     if (responseObj.message.error) {
 
-      console.log('api/initialise|onMSResponse|getPolicies|err', JSON.stringify(responseObj.message.error));
+      console.log('api/checkTerms|onMSResponse|getPolicies|err', JSON.stringify(responseObj.message.error));
 
       return sendBack(responseObj);
     }
 
-    console.log('api/initialise|onMSResponse|getConsent');
+    console.log('api/checkTerms|onMSResponse|getConsent');
 
     forward(consentRequest, jwt, function(consentResponse) {
       
-      console.log('api/initialise|onMSResponse|getConsent|response');
+      console.log('api/checkTerms|onMSResponse|getConsent|response');
 
       if (consentResponse.message.error) {
-        console.log('api/initialise|onMSResponse|getConsent|response|err', JSON.stringify(consentResponse.message.error));
+        console.log('api/checkTerms|onMSResponse|getConsent|response|err', JSON.stringify(consentResponse.message.error));
 
-        return sendBack(responseObj);
+        return sendBack(consentResponse);
       }
 
       if (!consentResponse.message.resources.length) {
 
-        console.log('api/initialise|onMSResponse|getConsent|response|signTerms|noConsent');
+        console.log('api/checkTerms|onMSResponse|getConsent|response|signTerms|noConsent');
 
         sendBack({ message: { ...message, status: 'sign_terms' } });
       } else {
@@ -77,12 +73,12 @@ module.exports = function(message, jwt, forward, sendBack) {
 
         if (!allAccepted) {
 
-          console.log('api/initialise|onMSResponse|getConsent|response|notAllTermsAccepted');
+          console.log('api/checkTerms|onMSResponse|getConsent|response|notAllTermsAccepted');
 
           sendBack({ message: { ...message, status: 'sign_terms' } });
         } else {
 
-          console.log('api/initialise|onMSResponse|getConsent|response|allTermsAccepted');
+          console.log('api/checkTerms|onMSResponse|getConsent|response|allTermsAccepted');
 
           const meta = js.encode({ signedTerms: true }, config.jwt.secret);
 
