@@ -77,7 +77,9 @@ module.exports = function(req, res, next) {
     }
   }
 
-  if (!req.url.startsWith('/auth') && !req.url.startsWith('/initialise')) {
+  if (!req.url.startsWith('/auth') && 
+    !req.url.startsWith('/initialise') && 
+    !req.url.startsWith('/hscn/')) {
     
     console.log('onWSRequest|checkTerms');
 
