@@ -1,7 +1,13 @@
 [
+  "bluebird",
+  "fast-safe-stringify",
+  "fs-extra",
+  "jsonschema",
+  "moment-timezone",
+  "traverse",
+  "object-path",
   "openid-client",
   "qewd-template",
-  "moment-timezone",
-  "jsonschema",
-  "valid-url"
+  "valid-url",
+  "winston"
 ]
