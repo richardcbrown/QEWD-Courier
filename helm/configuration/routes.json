@@ -149,12 +149,14 @@
     "uri": "/auth/logout",
     "method": "GET",
     "handler": "logout",
+    "authenticate": false,
     "on_microservice": "oidc_client"
   },
   {
     "uri": "/api/auth/logout",
     "method": "GET",
     "handler": "logout",
+    "authenticate": false,
     "on_microservice": "oidc_client"
   }
 ]
