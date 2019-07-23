@@ -2,13 +2,13 @@
 
  ----------------------------------------------------------------------------
  |                                                                          |
- | Copyright (c) 2019 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2018-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
  | Email: code.custodian@rippleosi.org                                      |
  |                                                                          |
- | Author: Rob Tweed, M/Gateway Developments Ltd                            |
+ | Author: Alexey Kucherenko <alexei.kucherenko@gmail.com>                  |
  |                                                                          |
  | Licensed under the Apache License, Version 2.0 (the "License");          |
  | you may not use this file except in compliance with the License.         |
@@ -23,59 +23,33 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  16 March 2019
 
 */
 
-/*
+'use strict';
 
-Top 3 Things summary
+const { logger } = require('../../lib/core');
+const { GetPatientTop3ThingsSummaryCommand } = require('../../lib/commands');
+const { getResponseError } = require('../../lib/errors');
 
-  GET /api/patients/9999999000/top3Things
+/**
+ * GET /api/patients/:patientId/top3Things
+ *
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function getPatientTop3ThingsSummary(args, finished) {
+  try {
+    const command = new GetPatientTop3ThingsSummaryCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.patientId);
 
-Returns empty array or latest in format
+    finished(responseObj);
+  } catch (err) {
+    logger.error('apis/getPatientTop3ThingsSummary|err:', err);
 
-*/
+    const responseError = getResponseError(err);
 
-var tools = require('../../../utils/tools');
-
-function getTop3ThingsSummary(args, finished) {
-
-  var patientId = args.patientId;
-
-  // override patientId for PHR Users - only allowed to see their own data
-
-  if (args.session.role === 'phrUser') patientId = args.session.nhsNumber;
-
-  var valid = tools.isPatientIdValid(patientId);
-  if (valid.error) return finished(valid);
-
-  var doc = this.db.use('Top3Things');
-
-  var sourceId = doc.$(['byPatient', patientId, 'latest']).value;
-  if (sourceId === '') {
-    return finished({
-      api: 'getPatientTop3ThingsSummary',
-      use: 'results',
-      results: []
-    });
+    finished(responseError);
   }
-
-  var top3 = doc.$(['bySourceId', sourceId]).getDocument();
-  var summary = {
-    api: 'getPatientTop3ThingsSummary',
-    use: 'results',
-    results: [{
-      source: 'QEWDDB',
-      sourceId: sourceId,
-      dateCreated: top3.date,
-      name1: top3.data.name1,
-      name2: top3.data.name2,
-      name3: top3.data.name3
-    }]
-  };
-
-  finished(summary);
-}
-
-module.exports = getTop3ThingsSummary;
+};

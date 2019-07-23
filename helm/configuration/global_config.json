@@ -1,12 +1,15 @@
 {
+  "initialisation_service": {
+    "policies": "Test Helm Terms,Test Helm Privacy"
+  },
   "oidc_client": {
     "hosts": {
-      "oidc_server": "http://mango-cookie.ripple.foundation:8000",
-      "orchestrator": "http://mango-cookie.ripple.foundation:8080"
+      "oidc_server": "http://xxxxx",
+      "orchestrator": "http://xxxxx"
     },
     "type": "OpenID Connect",
-    "client_id": "foo",
-    "client_secret": "bar",
+    "client_id": "xxxxx",
+    "client_secret": "xxxxx",
     "scope": {
       "login": "openid"
     },
@@ -22,42 +25,29 @@
       },
       "orchestrator": {
         "callback_url": "/api/auth/token",
-        "post_logout_redirect_uri": "/"
+        "post_logout_redirect_uri": ""
       }
     },
     "index_url": "/index.html",
     "cookie_name": "JSESSIONID",
     "logout_approach": "client"
   },
-  "DDS": {
-    "auth": {
-      "host": "https://devauth.discoverydataservice.net",
-      "path": "/auth/realms/endeavour/protocol/openid-connect/token",
-      "username": "xxxxxxxx",
-      "password": "yyyyyyyyyyy",
-      "client_id": "eds-data-checker",
-      "grant_type": "password"
-    },
-    "api": {
-      "host": "https://devgateway.discoverydataservice.net/data-assurance",
-      "paths": {
-        "getPatientsByNHSNumber": "/api/fhir/patients",
-        "getPatientResources": "/api/fhir/resources",
-        "getResource": "/api/fhir/reference"
-      }
-    },
-    "mode": "test"
-  },
   "openehr": {
     "servers": {
       "ethercis": {
-        "url": "http://46.101.81.30:8080",
-        "username": "xxxxxxx",
-        "password": "yyyyyyyy",
+        "url": "xxxxx",
+        "username": "xxxxx",
+        "password": "xxxxx",
         "platform": "ethercis"
       }
     },
     "defaultPostHost": "ethercis",
+    "sites": {
+      "ltht": {
+        "client_id": "xxxxxx",
+        "client_secret": "yyyyyyy"
+      }
+    },
     "synopsis": {
       "headings": [
         "allergies",
@@ -106,7 +96,7 @@
       "personalnotes": true,
       "problems": {
         "template": {
-          "name": "IDCR - Problem List.v1"
+          "name": "IDCR Problem List.v1"
         },
         "fhir": {
           "name": "Condition"
@@ -123,7 +113,7 @@
         "summaryTableFields": ["name", "score", "dateCreated"]
       },
       "referrals": true,
-      "top3Things": false,
+      "top3Things": true,
       "vaccinations": {
         "template": {
           "name": "IDCR - Immunisation summary.v0"

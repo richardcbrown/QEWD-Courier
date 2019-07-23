@@ -23,7 +23,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  26 March 2019
 
 */
 
@@ -50,7 +50,7 @@
   For the latter, it looks for the 'api' and checks that its value is in the 'returnArrayResponse' hash
 
 
-  ALL OTHER responses are passed through unchanged - however, in QEWD-Up, if a 
+  ALL OTHER responses are passed through unchanged - however, in QEWD-Up, if a
   onWSResponse event hook module is defined, then it is the responsibility of that
   module to send responses (QEWD's default processing of this stage is bypassed).  So
   you'll see the "pass-through" response handling logic at the end, for both valid and
@@ -61,14 +61,19 @@
 var returnArrayResponses = {
   getPatientHeadingSummary: true,
   getPatientHeadingDetail: true,
-  getPatientTop3ThingsSummary: true
+  getPatientTop3ThingsSummary: true,
+  getRespectFormVersions: true
 };
 
 module.exports = function(req, res, next) {
 
-  // a response message coming back from the worker will be saved in res.locals.message 
-
+  // a response message coming back from the worker will be saved in res.locals.message
   var messageObj = res.locals.message;
+
+  if (messageObj.meta) {
+    res.cookie('META', messageObj.meta);
+    delete messageObj.meta;
+  }
 
   if (messageObj.oidc_redirect) {
 
@@ -76,7 +81,7 @@ module.exports = function(req, res, next) {
     // will include the redirection URL for the browser (messageObj.oidc_redirect)
 
     // The JWT will be returned in a cookie name/value pair, which
-    // will also be in the response from /api/auth/token  
+    // will also be in the response from /api/auth/token
 
     if (messageObj.cookieName) {
       var value = messageObj.cookieValue || messageObj.token;
