@@ -67,8 +67,12 @@ class EhrSessionService {
         };
       }
 
-      debug('deleting expired cached session for %s', host);
-      await this.stop(host, cachedSession.id);
+      try {
+        debug('deleting expired cached session for %s', host);
+        await this.stop(host, cachedSession.id);
+      } catch (e) {
+        debug('failed to delete expired cached session for %s %s', host, e.message);
+      }
 
       this.sessionCache.delete(host);
     }
