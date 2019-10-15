@@ -7,7 +7,7 @@ module.exports = function(message, jwt, forward, sendBack) {
   console.log('api/checkTerms|onMSResponse');
 
   const consentRequest = {
-    path: `/api/fhir/getPatientConsent`,
+    path: `/api/fhir/getPatientConsent/null`,
     method: 'GET'
   };
 
