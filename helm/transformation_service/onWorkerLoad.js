@@ -2,7 +2,7 @@
 
  ----------------------------------------------------------------------------
  |                                                                          |
- | Copyright (c) 2018-19 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2019 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -23,46 +23,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 April 2019
+  16 March 2019
 
 */
 
 'use strict';
 
-const { logger } = require('../../lib/core');
-const { BadRequestError } = require('../errors');
-const { isPatientIdValid } = require('../shared/validation');
-const { Heading } = require('../shared/enums');
+const globalConfig = require('/opt/qewd/mapped/configuration/global_config.json');
 
-class GetPatientTop3ThingsHscnDetailCommand {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
-
-  /**
-   * @param  {string} site
-   * @param  {string} patientId
-   * @param  {Object} headers
-   * @return {Promise.<Object>}
-   */
-  async execute(site, patientId, headers) {
-    logger.info('commands/getPatientTop3ThingsHscnDetail', { site, patientId });
-
-    logger.debug('headers:', headers);
-
-    const valid = isPatientIdValid(patientId);
-    if (!valid.ok) {
-      throw new BadRequestError(valid.error);
-    }
-
-    const { top3ThingsService } = this.ctx.services;
-    // const responseObj = top3ThingsService.getLatestDetailByPatientId(patientId);
-
-
-    const responseObj = await top3ThingsService.getLatest(patientId, Heading.TOP_3_THINGS);
-
-    return responseObj;
-  }
-}
-
-module.exports = GetPatientTop3ThingsHscnDetailCommand;
+module.exports = function () {
+  this.userDefined.globalConfig = globalConfig;
+};
