@@ -20,69 +20,24 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  09 Oct 2019
+  22 Oct 2019
 
 */
 
 'use strict';
 
-const AuthenticateSiteService = require('../../services/authenticateSiteService')
-
-function qewdifyError(err) {
-  return {
-    error: err.userMessage || err.message
-  };
-}
-
-function getResponseError(err = new Error('Unknown error')) {
-  const resultError = err.error ? err : qewdifyError(err);
-
-  return resultError;
-}
-
-class AuthConfigurationProvider {
-  constructor(config) {
-    this.config = config
-  }
-
-  getSitesConfig() {
-    return this.config.openehr.sites
-  }
-
-  getAuthUrl() {
-    const authHost = this.config.oidc_client.hosts.oidc_server;
-    const endpoint = this.config.oidc_client.urls.oidc_server.introspection_endpoint;
+module.exports = async function(message, jwt, forward, sendBack) {
   
-    return `${authHost}${endpoint}`
-  }
-}
-
-module.exports = async function(args, finished) { 
-
-    console.log('api/transformTopThreeThings|invoke');
+    console.log('api/transformTopThreeThings|onMSResponse');
   
-    const authenticateSiteService = new AuthenticateSiteService(
-      new AuthConfigurationProvider(this.userDefined.globalConfig)
-    );
+    const processRequest = {
+        path: '/api/consent/process',
+        method: 'POST'
+    };
 
-    try {
+    forward(processRequest, jwt, function (responseObj) {
+        console.log(responseObj);
+    });
 
-      await authenticateSiteService.authenticate(args.site, args.req.headers)
-
-      var session = this.jwt.handlers.createRestSession.call(this, args);
-
-      session.role = 'ORGANISATION';
-      session.username = args.site;
-      session.authenticated = true;
-      session.timeout = 600;
-
-      var jwt = this.jwt.handlers.setJWT.call(this, session);
-
-      finished({ site: args.site, patientId: args.patientId, jwt });
-    } catch (error) {
-
-      const responseError = getResponseError(error);
-
-      finished(responseError);
-    }
-}
+    sendBack({ message: { ok: true } });
+};

@@ -16,7 +16,7 @@ module.exports = function(message, jwt, forward, sendBack) {
   console.log('api/getTerms|onMSResponse|policicies', JSON.stringify(policies));
 
   const consentRequest = {
-    path: `/api/fhir/getPatientConsent`,
+    path: `/api/fhir/getPatientConsent/null`,
     method: 'GET'
   };
   

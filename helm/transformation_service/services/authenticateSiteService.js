@@ -96,10 +96,7 @@ class AuthenticateSiteService {
    * @return {Promise.<Object>}
    */
   async getTokenIntrospection(token, credentials) {
-    //logger.info('services/AuthenticateSite|getTokenIntrospection', { token, credentials });
     console.log('services/AuthenticateSite|getTokenIntrospection', { token, credentials });
-
-    //logger.debug('hostConfig:', this.hostConfig);
 
     const options = {
       url: this.hostConfig.getAuthUrl(),
@@ -115,11 +112,7 @@ class AuthenticateSiteService {
 
     console.log(options)
 
-    //logger.debug('options:', options);
     const result = await requestAsync(options);
-    //logger.debug('result:', result);
-
-    console.log(result)
 
     let parsed;
     try {
