@@ -66,8 +66,7 @@
     "on_microservice": "openehr_service",
     "from_microservices": [
       "transformation_service"
-    ],
-    "authenticate": false
+    ]
   },
   {
     "uri": "/api/initialise",
@@ -163,7 +162,8 @@
     "method": "GET",
     "handler": "getPatient",
     "from_microservices": [
-      "transformation_service"
+      "transformation_service",
+      "consent_service"
     ],
     "on_microservice": "fhir_service"
   },
@@ -185,5 +185,41 @@
       "initialisation_service"
     ],
     "on_microservice": "fhir_service"
+  },
+  {
+    "uri": "/api/consent/send/:patientId",
+    "method": "POST",
+    "handler": "sendConsent",
+    "on_microservice": "consent_service",
+    "from_microservices": [
+      "initialisation_service"
+    ]
+  },
+  {
+    "uri": "/api/consent/patients",
+    "method": "POST",
+    "handler": "getPatients",
+    "on_microservice": "consent_service",
+    "from_microservices": [
+      "consent_service"
+    ]
+  },
+  {
+    "uri": "/api/consent/patient/:patientId",
+    "method": "POST",
+    "handler": "setPatient",
+    "on_microservice": "consent_service",
+    "from_microservices": [
+      "consent_service"
+    ]
+  },
+  {
+    "uri": "/api/consent/process",
+    "method": "POST",
+    "handler": "processConsent",
+    "on_microservice": "consent_service",
+    "from_microservices": [
+      "consent_service"
+    ]
   }
 ]

@@ -19,8 +19,23 @@ module.exports = function(message, jwt, forward, sendBack) {
       return sendBack(responseObj);
     }
 
-    console.log('api/acceptTerms|onMSResponse|postPatientConsent|complete');
+    const sendConsentApiRequest = {
+      path: `/api/consent/send/${message.patientId}`,
+      method: 'POST'
+    };
 
-    sendBack({ message: { status: 'login' } });
+    console.log('api/acceptTerms|onMSResponse|sendPatientConsent');
+
+    forward(sendConsentApiRequest, jwt, function (consentResponse) {
+      if (consentResponse.message.error) {
+        console.log(consentResponse.message.error);
+      }
+
+      console.log('api/acceptTerms|onMSResponse|sendPatientConsent|complete');
+
+      console.log('api/acceptTerms|onMSResponse|postPatientConsent|complete');
+
+      sendBack({ message: { status: 'login' } });
+    });
   });
 };

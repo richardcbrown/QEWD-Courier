@@ -20,69 +20,36 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  09 Oct 2019
+  22 Oct 2019
 
 */
 
 'use strict';
 
-const AuthenticateSiteService = require('../../services/authenticateSiteService')
+module.exports = function(args, finished) { 
+    console.log("apis/setPatient|start");
 
-function qewdifyError(err) {
-  return {
-    error: err.userMessage || err.message
-  };
-}
+    const patientId = args.patientId;
+    const patient = args.req.body;
 
-function getResponseError(err = new Error('Unknown error')) {
-  const resultError = err.error ? err : qewdifyError(err);
+    const pendingCache = this.db.use("Pending");
 
-  return resultError;
-}
+    pendingCache.$(patientId).setDocument(patient);
 
-class AuthConfigurationProvider {
-  constructor(config) {
-    this.config = config
-  }
+    const pending = pendingCache.$('PendingPatients').getDocument(true);
+    
+    const consenting = pendingCache.$('ConsentingPatients').getDocument(true) || {};
 
-  getSitesConfig() {
-    return this.config.openehr.sites
-  }
+    consenting[patientId] = true;
+    delete pending[patientId];
 
-  getAuthUrl() {
-    const authHost = this.config.oidc_client.hosts.oidc_server;
-    const endpoint = this.config.oidc_client.urls.oidc_server.introspection_endpoint;
-  
-    return `${authHost}${endpoint}`
-  }
-}
+    pendingCache.$('ConsentingPatients').delete();
+    pendingCache.$('PendingPatients').delete();
 
-module.exports = async function(args, finished) { 
+    pendingCache.$('ConsentingPatients').setDocument(consenting);
+    pendingCache.$('PendingPatients').setDocument(pending);
 
-    console.log('api/transformTopThreeThings|invoke');
-  
-    const authenticateSiteService = new AuthenticateSiteService(
-      new AuthConfigurationProvider(this.userDefined.globalConfig)
-    );
+    finished({ ok: true })
 
-    try {
-
-      await authenticateSiteService.authenticate(args.site, args.req.headers)
-
-      var session = this.jwt.handlers.createRestSession.call(this, args);
-
-      session.role = 'ORGANISATION';
-      session.username = args.site;
-      session.authenticated = true;
-      session.timeout = 600;
-
-      var jwt = this.jwt.handlers.setJWT.call(this, session);
-
-      finished({ site: args.site, patientId: args.patientId, jwt });
-    } catch (error) {
-
-      const responseError = getResponseError(error);
-
-      finished(responseError);
-    }
+    console.log("apis/setPatient|end");
 }
