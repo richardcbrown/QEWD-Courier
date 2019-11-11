@@ -163,7 +163,8 @@
     "handler": "getPatient",
     "from_microservices": [
       "transformation_service",
-      "consent_service"
+      "consent_service",
+      "careplan_service"
     ],
     "on_microservice": "fhir_service"
   },
@@ -221,5 +222,38 @@
     "from_microservices": [
       "consent_service"
     ]
+  },
+  {
+    "uri": "/api/fhir/resources/:resourceType",
+    "method": "GET",
+    "handler": "getResources",
+    "from_microservices": [
+      "careplan_service"
+    ],
+    "on_microservice": "fhir_service"
+  },
+  {
+    "uri": "/api/fhirstore/:resourceType",
+    "method": "GET",
+    "handler": "getResources",
+    "from_microservices": [
+      "careplan_service"
+    ],
+    "on_microservice": "fhirstore_service"
+  },
+  {
+    "uri": "/api/careplan/:patientId",
+    "method": "GET",
+    "handler": "getPatientCareplan",
+    "on_microservice": "careplan_service"
+  },
+  {
+    "uri": "/api/fhir/resources/:resourceType/:id",
+    "method": "GET",
+    "handler": "getResources",
+    "from_microservices": [
+      "careplan_service"
+    ],
+    "on_microservice": "fhir_service"
   }
 ]
