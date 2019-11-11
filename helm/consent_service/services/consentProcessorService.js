@@ -29,6 +29,18 @@
 const request = require('request');
 const moment = require('moment');
 
+function parseJsonFormatter(result) {
+    let jsonResult;
+  
+    try {
+        jsonResult = JSON.parse(result);
+    } catch (err) {
+        jsonResult = {};
+    }
+  
+    return jsonResult;
+}
+
 function requestAsync(args, { formatter } = {}) {
 
     return new Promise((resolve, reject) => {
@@ -119,8 +131,8 @@ class LthtConsentProvider {
                     json: true
                 };
             
-                if (this.clientConfig.auth.proxy) {
-                    tokenRequest.proxy = this.clientConfig.auth.proxy;
+                if (this.clientConfig.consent.proxy) {
+                    requestArgs.proxy = this.clientConfig.consent.proxy;
                 }
 
                 const request = await authenticator.authenticate(requestArgs);
@@ -131,6 +143,7 @@ class LthtConsentProvider {
 
                 cache.$('CompletedPatients').setDocument(completed);
             } catch (error) {
+                console.log('LthtConsentProvider|sendConsent|end');
                 console.log(error)
             }
         }
@@ -165,7 +178,8 @@ class OAuthTokenAuthenticationProvider {
                 'scope': this.clientConfig.auth.scope
             },
             headers: {
-                'authorization': `Basic ${ Buffer.from(this.clientConfig.client_id + ':' + this.clientConfig.client_secret).toString('base64')}`
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'authorization': `Basic ${ Buffer.from(this.clientConfig.auth.client_id + ':' + this.clientConfig.auth.client_secret).toString('base64')}`
             }
         };
 
@@ -173,10 +187,10 @@ class OAuthTokenAuthenticationProvider {
             tokenRequest.proxy = this.clientConfig.auth.proxy;
         }
 
-        const response = await requestAsync(tokenRequest);
+        const response = await requestAsync(tokenRequest, { formatter: parseJsonFormatter });
     
-        this.token = response[this.clientConfig.token_property];
-        this.expiry = response[this.clientConfig.expiry_property];
+        this.token = response[this.clientConfig.auth.token_property];
+        this.expiry = response[this.clientConfig.auth.expiry_property];
 
         request.headers['authorization'] = `Bearer ${this.token}`;
         
