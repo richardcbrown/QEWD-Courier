@@ -242,9 +242,24 @@
     "on_microservice": "fhirstore_service"
   },
   {
+    "uri": "/api/fhirstore/:resourceType/:id",
+    "method": "PUT",
+    "handler": "putResources",
+    "from_microservices": [
+      "careplan_service"
+    ],
+    "on_microservice": "fhirstore_service"
+  },
+  {
     "uri": "/api/careplan/:patientId",
     "method": "GET",
     "handler": "getPatientCareplan",
+    "on_microservice": "careplan_service"
+  },
+  {
+    "uri": "/api/careplan/save/:patientId",
+    "method": "PUT",
+    "handler": "savePatientCareplan",
     "on_microservice": "careplan_service"
   },
   {

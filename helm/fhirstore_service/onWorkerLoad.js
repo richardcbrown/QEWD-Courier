@@ -26,18 +26,8 @@
 
 'use strict';
 
-const CareplanBuilderService = require('../../services/careplanBuilderService');
+const globalConfig = require('/opt/qewd/mapped/configuration/global_config.json');
 
-module.exports = function(message, jwt, forward, sendBack) {
-  console.log("apis/getPatientCarePlan|onMSResponse|start");
-
-  const careplanService = new CareplanBuilderService()
-
-  careplanService.buildCareplan(message.patientId, forward, jwt).then((result) => {
-    console.log(result);
-
-    sendBack({ message: { ...result } });
-  
-    console.log("apis/getPatientCarePlan|onMSResponse|end");
-  });
-}
+module.exports = function () {
+  this.userDefined.serviceConfig = globalConfig["fhirstore_service"];
+};

@@ -26,18 +26,27 @@
 
 'use strict';
 
-const CareplanBuilderService = require('../../services/careplanBuilderService');
+const request = require('request');
 
-module.exports = function(message, jwt, forward, sendBack) {
-  console.log("apis/getPatientCarePlan|onMSResponse|start");
+module.exports = function(args, finished) { 
+  console.log("apis/putResources|start");
 
-  const careplanService = new CareplanBuilderService()
+  console.log(args)
 
-  careplanService.buildCareplan(message.patientId, forward, jwt).then((result) => {
-    console.log(result);
+  const config = this.userDefined.serviceConfig;
 
-    sendBack({ message: { ...result } });
-  
-    console.log("apis/getPatientCarePlan|onMSResponse|end");
+  console.log(`${config.host}${args.resourceType}/${args.id}`)
+
+  request({
+    url: `${config.host}${args.resourceType}/${args.id}`,
+    method: "PUT",
+    json: args.req.body
+  }, (err, response, body) => {
+
+    console.log(JSON.parse(body))
+
+    finished(JSON.parse(body));
   });
+
+  console.log("apis/putResources|end");
 }

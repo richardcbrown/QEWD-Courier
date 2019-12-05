@@ -26,18 +26,14 @@
 
 'use strict';
 
-const CareplanBuilderService = require('../../services/careplanBuilderService');
+const CareplanSaverService = require('../../services/careplanSaverService');
 
 module.exports = function(message, jwt, forward, sendBack) {
-  console.log("apis/getPatientCarePlan|onMSResponse|start");
+  console.log("apis/savePatientCarePlan|onMSResponse|start");
 
-  const careplanService = new CareplanBuilderService()
+  const careplanSaverService = new CareplanSaverService();
 
-  careplanService.buildCareplan(message.patientId, forward, jwt).then((result) => {
-    console.log(result);
+  careplanSaverService.saveCarePlan(message.patientId, message.resources, forward, jwt);
 
-    sendBack({ message: { ...result } });
-  
-    console.log("apis/getPatientCarePlan|onMSResponse|end");
-  });
+  console.log("apis/savePatientCarePlan|onMSResponse|end");
 }

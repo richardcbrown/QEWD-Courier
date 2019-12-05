@@ -37,15 +37,11 @@ module.exports = function(args, finished) {
 
   console.log(query)
 
-  console.log(`http://host.docker.internal:8888/fhir/stu3/${args.resourceType}?${query}`)
+  const config = this.userDefined.serviceConfig;
 
-  request(`http://host.docker.internal:8888/fhir/stu3/${args.resourceType}?${query}`, (err, response, body) => {
-    
-    console.log("````````````````````````````````````````````````````````````````````````")
-    console.log("````````````````````````````````````````````````````````````````````````")
-    console.log("````````````````````````````````````````````````````````````````````````")
-    console.log("````````````````````````````````````````````````````````````````````````")
-    console.log("````````````````````````````````````````````````````````````````````````")
+  console.log(`${config.host}${args.resourceType}?${query}`)
+
+  request(`${config.host}${args.resourceType}?${query}`, (err, response, body) => {
 
     console.log(JSON.parse(body))
 
