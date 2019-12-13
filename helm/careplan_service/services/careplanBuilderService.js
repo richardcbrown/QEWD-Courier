@@ -85,10 +85,11 @@ class CarePlanTextService {
             goal: this.getGoal(careplanData),
             questionnaires: this.getQuestionnaires(careplanData),
             testResults: this.getResultsText(careplanData),
-            tests: this.getTestResultsText(careplanData),
-            matters: this.getMattersText(careplanData),
-            concerns: this.getConcernsText(careplanData),
-            goalDetails: this.getGoalText()
+            tests: this.getTestResultsText(),
+            matters: this.getMattersText(),
+            concerns: this.getConcernsText(),
+            considerations: this.getConsiderationsText(),
+            achievements: this.getAchievementsText()
         };
     }
 
@@ -155,23 +156,37 @@ class CarePlanTextService {
 
     getTestResultsText() {   
         return {
-            questionnaire: "HelmCarePlanSupplementaryQuestions",
+            questionnaire: "HelmCarePlanTestResultsQuestions",
             questions: ["test-results"]
+        };
+    }
+
+    getConsiderationsText() {
+        return {
+            questionnaire: "HelmCarePlanWhatMattersToYouQuestions",
+            questions: ["considerations"]
         };
     }
 
     getMattersText() {    
         return {
-            questionnaire: "HelmCarePlanSupplementaryQuestions",
+            questionnaire: "HelmCarePlanWhatMattersToYouQuestions",
             questions: ["concerns-checkboxes"]
         };
     }
 
     getConcernsText() {
         return {
-            questionnaire: "HelmCarePlanConcernQuestions",
+            questionnaire: "HelmCarePlanWhatMattersToYouQuestions",
             questions: ["concerns"]
         };
+    }
+
+    getAchievementsText() {
+        return {
+            questionnaire: "HelmCarePlanWhatMattersToYouQuestions",
+            questions: ["achievements"]
+        }
     }
 
     getGoalText() {
