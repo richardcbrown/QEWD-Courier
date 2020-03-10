@@ -267,7 +267,8 @@ class CarePlanObservationService {
             const flattenedCodes = mappedCodes.map((mappedCode) => `${mappedCode.coding[0].system}|${mappedCode.coding[0].code}`);
 
             const observationApiRequest = {
-                path: `/api/fhir/resources/Observation?subject=Patient/5c4176f1-818a-49cc-8de2-82dc1288aa1e&code=${flattenedCodes.join(',')}`,
+                //path: `/api/fhir/resources/Observation?subject=Patient/5c4176f1-818a-49cc-8de2-82dc1288aa1e&code=${flattenedCodes.join(',')}`,
+                path: `/api/fhir/resources/Observation?patient:identifier=9876543210`,
                 method: 'GET'
             };
 
@@ -349,13 +350,92 @@ class CarePlanBuilderService {
 
             const observationBundle = await observationService.getCareplanObservations(careplan, forward, jwt);
 
+            const { entry } = observationBundle;
+
+            let bloodpressure = [];
+
+            const bps = entry.filter((e) => matchCoding(e.resource.code, {
+                "coding": [
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "75367002",
+                        "display": "Blood pressure"
+                    }
+                ]
+            }));
+
+            bloodpressure = [...bps];
+
+            const diastolic = entry.filter((e) => matchCoding(e.resource.code, {
+                "coding": [
+                    {
+                        "system": "HEALTHPLUG",
+                        "code": "SysObsCardiovascBPDiastolicValue_SysObsCardiovascBPClinicalMeasurementComp_SysObsCardiovascBPComp"
+                    }
+                ]
+            })).map((e) => e.resource);
+            const systolic = entry.filter((e) => matchCoding(e.resource.code, {
+                "coding": [
+                    {
+                        "system": "HEALTHPLUG",
+                        "code": "SysObsCardiovascBPSystolicValue_SysObsCardiovascBPClinicalMeasurementComp_SysObsCardiovascBPComp"
+                    }
+                ]
+            })).map((e) => e.resource);
+
+            systolic.forEach((sys) => {
+                const dias = diastolic.find((d) => d.effectiveDateTime === sys.effectiveDateTime);
+
+                if (!dias) {
+                    return;
+                }
+
+                bloodpressure.push({ resource: {
+                    resourceType: "Observation",
+                    code: {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "75367002",
+                                "display": "Blood pressure"
+                            }
+                        ]
+                    },
+                    effectiveDateTime: sys.effectiveDateTime,
+                    component: [
+                        {
+                            code: {
+                                coding: [{ system: "http://snomed.info/sct", code: "72313002", display: "Systolic blood pressure" }]
+                            },
+                            valueQuantity: {
+                                value: sys.valueQuantity.value,
+                                unit: "mm[Hg]",
+                                system: "http://unitsofmeasure.org",
+                                code: "mm[Hg]"
+                            }
+                        },
+                        {
+                            code: {
+                                coding: [{ system: "http://snomed.info/sct", code: "1091811000000102", display: "Diastolic arterial pressure" }]
+                            },
+                            valueQuantity: {
+                                value: dias.valueQuantity.value,
+                                unit: "mm[Hg]",
+                                system: "http://unitsofmeasure.org",
+                                code: "mm[Hg]"
+                            }
+                        }
+                    ]
+                }})
+            })
+
             const combinedResult = {
                 resourceType: "Bundle",
                 entry: [
                     {
                         resource: careplan
                     },
-                    ...observationBundle.entry
+                    ...bloodpressure
                 ]
             };
 
