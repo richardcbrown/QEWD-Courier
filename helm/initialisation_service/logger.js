@@ -26,10 +26,30 @@
 
 'use strict';
 
-require('./logger');
+const winston = require('winston');
 
-const globalConfig = require('/opt/qewd/mapped/configuration/global_config.json');
+let logger = null;
 
-module.exports = function () {
-  this.userDefined.globalConfig = globalConfig;
-};
+function buildLogger(serviceName) {
+  if (logger) {
+    return;
+  }
+  
+  logger = winston.createLogger({
+    level: 'error',
+    format: winston.format.json(),
+    defaultMeta: { service: serviceName },
+    transports: [
+      new winston.transports.File({ filename: 'logs/error.log', level: 'error' })
+    ]
+  });
+
+  // Call exceptions.handle with a transport to handle exceptions
+  logger.exceptions.handle(
+    new winston.transports.File({ filename: 'logs/error.log' })
+  );
+}
+
+buildLogger('fhir_service');
+
+module.exports = { logger };

@@ -28,8 +28,6 @@
 
 require('./logger');
 
-const globalConfig = require('/opt/qewd/mapped/configuration/global_config.json');
+module.exports = function() {
 
-module.exports = function () {
-  this.userDefined.globalConfig = globalConfig;
 };
