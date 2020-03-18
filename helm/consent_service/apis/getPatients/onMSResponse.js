@@ -20,69 +20,53 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  09 Oct 2019
+  22 Oct 2019
 
 */
 
 'use strict';
 
-const AuthenticateSiteService = require('../../services/authenticateSiteService')
-
-function qewdifyError(err) {
-  return {
-    error: err.userMessage || err.message
-  };
-}
-
-function getResponseError(err = new Error('Unknown error')) {
-  const resultError = err.error ? err : qewdifyError(err);
-
-  return resultError;
-}
-
-class AuthConfigurationProvider {
-  constructor(config) {
-    this.config = config
-  }
-
-  getSitesConfig() {
-    return this.config.openehr.sites
-  }
-
-  getAuthUrl() {
-    const authHost = this.config.oidc_client.hosts.oidc_server;
-    const endpoint = this.config.oidc_client.urls.oidc_server.introspection_endpoint;
+module.exports = async function(message, jwt, forward, sendBack) {
   
-    return `${authHost}${endpoint}`
-  }
-}
-
-module.exports = async function(args, finished) { 
-
-    console.log('api/transformTopThreeThings|invoke');
+    console.log('apis/getPatients|onMSResponse|start');
   
-    const authenticateSiteService = new AuthenticateSiteService(
-      new AuthConfigurationProvider(this.userDefined.globalConfig)
-    );
+    const { patients } = message;
 
-    try {
+    const patientPromises = [];
 
-      await authenticateSiteService.authenticate(args.site, args.req.headers)
+    Object.keys(patients).forEach((patientId) => {
+        const patientPromise = new Promise((resolve, reject) => {
+            const patientRequest = {
+                path: `/api/fhir/patient/${patientId}`,
+                method: 'GET'
+            };
 
-      var session = this.jwt.handlers.createRestSession.call(this, args);
+            forward(patientRequest, jwt, function (responseObj) {
+                const setPatientRequest = {
+                    path: `/api/consent/patient/${patientId}`,
+                    method: 'POST',
+                    body: responseObj.message.resources
+                };
 
-      session.role = 'ORGANISATION';
-      session.username = args.site;
-      session.authenticated = true;
-      session.timeout = 600;
+                forward(setPatientRequest, jwt, function (setResponse) {
+                    if (setResponse.error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+        });
 
-      var jwt = this.jwt.handlers.setJWT.call(this, session);
+        patientPromises.push(patientPromise)
+    });
 
-      finished({ site: args.site, patientId: args.patientId, jwt });
-    } catch (error) {
+    Promise.all(patientPromises).then(() => {
+        sendBack({ message: { ok: true } });
+    }).catch((error) => {
+        console.log(error);
+        sendBack({ message: { ok: false } });
+    });
 
-      const responseError = getResponseError(error);
-
-      finished(responseError);
-    }
-}
+    console.log('apis/getPatients|onMSResponse|end');
+};

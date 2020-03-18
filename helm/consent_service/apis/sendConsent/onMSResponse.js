@@ -20,69 +20,28 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  09 Oct 2019
+  22 Oct 2019
 
 */
 
 'use strict';
 
-const AuthenticateSiteService = require('../../services/authenticateSiteService')
-
-function qewdifyError(err) {
-  return {
-    error: err.userMessage || err.message
-  };
-}
-
-function getResponseError(err = new Error('Unknown error')) {
-  const resultError = err.error ? err : qewdifyError(err);
-
-  return resultError;
-}
-
-class AuthConfigurationProvider {
-  constructor(config) {
-    this.config = config
-  }
-
-  getSitesConfig() {
-    return this.config.openehr.sites
-  }
-
-  getAuthUrl() {
-    const authHost = this.config.oidc_client.hosts.oidc_server;
-    const endpoint = this.config.oidc_client.urls.oidc_server.introspection_endpoint;
+module.exports = async function(message, jwt, forward, sendBack) {
   
-    return `${authHost}${endpoint}`
-  }
-}
+    console.log('api/sendConsent|onMSResponse|start');
 
-module.exports = async function(args, finished) { 
+    const getPatientsRequest = {
+        path: '/api/consent/patients',
+        method: 'POST'
+    };
 
-    console.log('api/transformTopThreeThings|invoke');
-  
-    const authenticateSiteService = new AuthenticateSiteService(
-      new AuthConfigurationProvider(this.userDefined.globalConfig)
-    );
+    forward(getPatientsRequest, message.serviceJwt, function(responseObj) {
+        if (responseObj.message.error) {
+            console.log(responseObj.message.error);
+        }
 
-    try {
+        sendBack({ message: { ok: true } });
+    });
 
-      await authenticateSiteService.authenticate(args.site, args.req.headers)
-
-      var session = this.jwt.handlers.createRestSession.call(this, args);
-
-      session.role = 'ORGANISATION';
-      session.username = args.site;
-      session.authenticated = true;
-      session.timeout = 600;
-
-      var jwt = this.jwt.handlers.setJWT.call(this, session);
-
-      finished({ site: args.site, patientId: args.patientId, jwt });
-    } catch (error) {
-
-      const responseError = getResponseError(error);
-
-      finished(responseError);
-    }
-}
+    console.log('api/sendConsent|onMSResponse|end');
+};

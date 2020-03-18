@@ -9,5 +9,6 @@
   "openid-client",
   "qewd-template",
   "valid-url",
-  "winston"
+  "winston",
+  "moment"
 ]
