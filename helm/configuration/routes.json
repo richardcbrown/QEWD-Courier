@@ -94,98 +94,10 @@
     "on_microservice": "initialisation_service"
   },
   {
-    "uri": "/auth/redirect",
-    "method": "GET",
-    "handler": "getRedirect",
-    "authenticate": false,
-    "on_microservice": "oidc_client"
-  },
-  {
-    "uri": "/api/auth/redirect",
-    "method": "GET",
-    "handler": "getRedirect",
-    "authenticate": false,
-    "on_microservice": "oidc_client"
-  },
-  {
-    "uri": "/auth/token",
-    "method": "GET",
-    "handler": "oidc_callback",
-    "authenticate": false,
-    "on_microservice": "oidc_client"
-  },
-  {
-    "uri": "/api/auth/token",
-    "method": "GET",
-    "handler": "oidc_callback",
-    "authenticate": false,
-    "on_microservice": "oidc_client"
-  },
-  {
-    "uri": "/auth/logout",
-    "method": "GET",
-    "handler": "logout",
-    "authenticate": false,
-    "on_microservice": "oidc_client"
-  },
-  {
-    "uri": "/api/auth/logout",
-    "method": "GET",
-    "handler": "logout",
-    "authenticate": false,
-    "on_microservice": "oidc_client"
-  },
-  {
     "uri": "/api/repository",
     "method": "GET",
     "handler": "searchRepository",
     "on_microservice": "repository_service"
-  },
-  {
-    "uri": "/api/demographics/:patientId",
-    "method": "GET",
-    "handler": "getPatientDemographics",
-    "on_microservice": "fhir_service"
-  },
-  {
-    "uri": "/api/fhir/getPolicies",
-    "method": "GET",
-    "handler": "getPolicies",
-    "from_microservices": [
-      "initialisation_service",
-      "transformation_service"
-    ],
-    "on_microservice": "fhir_service"
-  },
-  {
-    "uri": "/api/fhir/patient/:patientId",
-    "method": "GET",
-    "handler": "getPatient",
-    "from_microservices": [
-      "transformation_service",
-      "consent_service",
-      "careplan_service"
-    ],
-    "on_microservice": "fhir_service"
-  },
-  {
-    "uri": "/api/fhir/getPatientConsent/:patientId",
-    "method": "GET",
-    "handler": "getPatientConsent",
-    "from_microservices": [
-      "initialisation_service",
-      "transformation_service"
-    ],
-    "on_microservice": "fhir_service"
-  },
-  {
-    "uri": "/api/fhir/postPatientConsent",
-    "method": "POST",
-    "handler": "postPatientConsent",
-    "from_microservices": [
-      "initialisation_service"
-    ],
-    "on_microservice": "fhir_service"
   },
   {
     "uri": "/api/consent/send/:patientId",
@@ -224,15 +136,6 @@
     ]
   },
   {
-    "uri": "/api/fhir/resources/:resourceType",
-    "method": "GET",
-    "handler": "getResources",
-    "from_microservices": [
-      "careplan_service"
-    ],
-    "on_microservice": "fhir_service"
-  },
-  {
     "uri": "/api/fhirstore/:resourceType",
     "method": "GET",
     "handler": "getResources",
@@ -263,11 +166,88 @@
     "on_microservice": "careplan_service"
   },
   {
-    "uri": "/api/fhir/resources/:resourceType/:id",
+    "uri": "/auth/redirect",
     "method": "GET",
-    "handler": "getResources",
+    "handler": "getRedirect",
+    "authenticate": false,
+    "on_microservice": "auth_service"
+  },
+  {
+    "uri": "/api/auth/redirect",
+    "method": "GET",
+    "handler": "getRedirect",
+    "authenticate": false,
+    "on_microservice": "auth_service"
+  },
+  {
+    "uri": "/auth/token",
+    "method": "GET",
+    "handler": "oidc_callback",
+    "authenticate": false,
+    "on_microservice": "auth_service"
+  },
+  {
+    "uri": "/api/auth/token",
+    "method": "GET",
+    "handler": "oidc_callback",
+    "authenticate": false,
+    "on_microservice": "auth_service"
+  },
+  {
+    "uri": "/auth/logout",
+    "method": "GET",
+    "handler": "logout",
+    "authenticate": false,
+    "on_microservice": "auth_service"
+  },
+  {
+    "uri": "/api/auth/logout",
+    "method": "GET",
+    "handler": "logout",
+    "authenticate": false,
+    "on_microservice": "auth_service"
+  },
+  {
+    "uri": "/api/demographics/:patientId",
+    "method": "GET",
+    "handler": "getPatientDemographics",
+    "on_microservice": "fhir_service"
+  },
+  {
+    "uri": "/api/fhir/getPolicies",
+    "method": "GET",
+    "handler": "getPolicies",
     "from_microservices": [
-      "careplan_service"
+      "initialisation_service",
+      "transformation_service"
+    ],
+    "on_microservice": "fhir_service"
+  },
+  {
+    "uri": "/api/fhir/patient/:patientId",
+    "method": "GET",
+    "handler": "getPatient",
+    "from_microservices": [
+      "transformation_service"
+    ],
+    "on_microservice": "fhir_service"
+  },
+  {
+    "uri": "/api/fhir/getPatientConsent/:patientId",
+    "method": "GET",
+    "handler": "getPatientConsent",
+    "from_microservices": [
+      "initialisation_service",
+      "transformation_service"
+    ],
+    "on_microservice": "fhir_service"
+  },
+  {
+    "uri": "/api/fhir/postPatientConsent",
+    "method": "POST",
+    "handler": "postPatientConsent",
+    "from_microservices": [
+      "initialisation_service"
     ],
     "on_microservice": "fhir_service"
   }
