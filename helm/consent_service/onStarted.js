@@ -26,43 +26,8 @@
 
 'use strict';
 
-const winston = require('winston');
-require('winston-daily-rotate-file');
+require('./logger');
 
-let logger = null;
+module.exports = function() {
 
-var errorTransport = new (winston.transports.DailyRotateFile)({
-    filename: 'logs/error-%DATE%.log',
-    datePattern: 'YYYY-MM-DD',
-    maxSize: '20m',
-    maxFiles: '2d',
-    createSymlink: true,
-    symlinkName: 'error.log'
-});
-
-function buildLogger(serviceName) {
-  if (logger) {
-    return;
-  }
-  
-  logger = winston.createLogger({
-    level: 'error',
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      ),
-    defaultMeta: { service: serviceName },
-    transports: [
-        errorTransport
-    ]
-  });
-
-  // Call exceptions.handle with a transport to handle exceptions
-  logger.exceptions.handle(
-    errorTransport
-  );
-}
-
-buildLogger('openehr_service');
-
-module.exports = { logger };
+};

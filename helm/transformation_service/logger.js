@@ -27,8 +27,18 @@
 'use strict';
 
 const winston = require('winston');
+require('winston-daily-rotate-file');
 
 let logger = null;
+
+var errorTransport = new (winston.transports.DailyRotateFile)({
+    filename: 'logs/error-%DATE%.log',
+    datePattern: 'YYYY-MM-DD',
+    maxSize: '20m',
+    maxFiles: '2d',
+    createSymlink: true,
+    symlinkName: 'error.log'
+});
 
 function buildLogger(serviceName) {
   if (logger) {
@@ -37,19 +47,22 @@ function buildLogger(serviceName) {
   
   logger = winston.createLogger({
     level: 'error',
-    format: winston.format.json(),
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+      ),
     defaultMeta: { service: serviceName },
     transports: [
-      new winston.transports.File({ filename: 'logs/error.log', level: 'error' })
+        errorTransport
     ]
   });
 
   // Call exceptions.handle with a transport to handle exceptions
   logger.exceptions.handle(
-    new winston.transports.File({ filename: 'logs/error.log' })
+    errorTransport
   );
 }
 
-buildLogger('fhir_service');
+buildLogger('transformation_service');
 
 module.exports = { logger };

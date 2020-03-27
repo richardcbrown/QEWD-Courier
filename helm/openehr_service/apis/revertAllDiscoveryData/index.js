@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { RevertAllDiscoveryDataCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * DELETE /api/discovery/revert/all
  *
@@ -46,6 +48,8 @@ module.exports = async function revertAllDiscoveryData(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/revertAllDiscoveryData|err:', err);
 
     const responseError = getResponseError(err);

@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { PostFeedCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * POST /api/feeds
  *
@@ -46,6 +48,8 @@ module.exports = async function postFeed(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/postFeed|err:', err);
 
     const responseError = getResponseError(err);

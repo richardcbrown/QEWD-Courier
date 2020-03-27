@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { GetFeedsSummaryCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * GET /api/feeds
  *
@@ -46,6 +48,8 @@ module.exports = async function getFeedsSummary(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/getFeedsSummary|err:', err);
 
     const responseError = getResponseError(err);

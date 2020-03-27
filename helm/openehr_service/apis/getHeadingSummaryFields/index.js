@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { GetHeadingSummaryFieldsCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * GET /api/heading/:heading/fields/summary
  *
@@ -46,6 +48,8 @@ module.exports = async function getHeadingSummaryFields(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/getHeadingSummaryFields|err:', err);
 
     const responseError = getResponseError(err);

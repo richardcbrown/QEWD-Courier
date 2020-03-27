@@ -20,24 +20,29 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  22 Oct 2019
+  22 March 2020
 
 */
 
 'use strict';
 
+const logger = require('../../logger').logger;
+
 module.exports = async function(message, jwt, forward, sendBack) {
-  
-    console.log('api/transformTopThreeThings|onMSResponse');
-  
-    const processRequest = {
-        path: '/api/consent/process',
-        method: 'POST'
-    };
+    try {
+        console.log('api/transformTopThreeThings|onMSResponse');
+    
+        const processRequest = {
+            path: '/api/consent/process',
+            method: 'POST'
+        };
 
-    forward(processRequest, jwt, function (responseObj) {
-        console.log(responseObj);
-    });
+        forward(processRequest, jwt, function (responseObj) {
+            console.log(responseObj);
+        });
 
-    sendBack({ message: { ok: true } });
+        sendBack({ message: { ok: true } });
+    } catch (error) {
+        logger.error('', error);
+    }
 };

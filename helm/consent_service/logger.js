@@ -63,6 +63,6 @@ function buildLogger(serviceName) {
   );
 }
 
-buildLogger('openehr_service');
+buildLogger('consent_service');
 
 module.exports = { logger };

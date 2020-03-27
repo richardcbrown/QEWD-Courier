@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { PostRespectFormCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * POST /api/patients/:patientId/respectforms
  *
@@ -46,6 +48,8 @@ module.exports = async function postRespectForm(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/postRespectForm|err:', err);
 
     const responseError = getResponseError(err);

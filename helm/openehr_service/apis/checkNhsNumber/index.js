@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { CheckNhsNumberCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * GET /api/openehr/check
  *
@@ -46,6 +48,7 @@ module.exports = async function checkNhsNumber(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
     logger.error('apis/checkNhsNumber|err:', err);
 
     const responseError = getResponseError(err);
