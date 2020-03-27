@@ -55,89 +55,95 @@
 const jwt = require('jwt-simple');
 const config = require('../configuration/config.json');
 
+const fileLogger = require('./logger').logger;
+
 module.exports = function(req, res, next) {
+    try {
+        // Apply CSRF protection to all incoming requests
+        // except the Callback URL (/api/auth/token) from the OIDC server:
 
-  // Apply CSRF protection to all incoming requests
-  // except the Callback URL (/api/auth/token) from the OIDC server:
+        function sendError(message) {
+            res.set('content-length', message.length);
+            res.status(400).send(message);
+        }
 
-  function sendError(message) {
-    res.set('content-length', message.length);
-    res.status(400).send(message);
-  }
+        if (!req.originalUrl.startsWith('/api/auth/token?')) {
+            if (!req.headers) {
+            return sendError('Invalid request: headers missing');
+            }
+            if (!req.headers['x-requested-with']) {
+            return sendError('Invalid request: x-requested-with header missing');
+            }
+            if (req.headers['x-requested-with'] !== 'XMLHttpRequest') {
+            return sendError('Invalid request: x-requested-with header invalid');
+            }
+        }
 
-  if (!req.originalUrl.startsWith('/api/auth/token?')) {
-    if (!req.headers) {
-      return sendError('Invalid request: headers missing');
+        if (!req.url.startsWith('/auth') && 
+            !req.url.startsWith('/initialise') && 
+            !req.url.startsWith('/hscn/')) {
+            
+            console.log('onWSRequest|checkTerms');
+
+            let termsSigned = false;
+            let meta
+
+            if (req.headers.cookie && req.headers.cookie.indexOf('META=') !== -1) {
+            try {
+                
+                meta = req.headers.cookie.split('META=')[1];
+                meta = meta.split(';')[0];
+                const decoded = jwt.decode(meta, config.jwt.secret);
+
+                termsSigned = decoded.signedTerms;
+            } catch (e) {
+                console.log('onWSRequest|checkTerms|err', e)
+                return res.send({ status: 'sign_terms' });
+            }      
+            } 
+            
+            if (!termsSigned) {
+            console.log('onWSRequest|checkTerms|signTerms');
+            return res.send({ status: 'sign_terms' });
+            } else {
+            console.log('onWSRequest|checkTerms|termsSigned');
+            req.headers.meta = meta;
+            }
+        }
+
+        // incoming requests may have the JWT in a cookie header (eg /api/auth/token from OIDC Provider)
+        // if so, copy this into a Bearer authorization header
+
+        if (!req.headers.authorization && req.headers.cookie) {
+            if (req.headers.cookie.indexOf('JSESSIONID=') !== -1) {
+            var token = req.headers.cookie.split('JSESSIONID=')[1];
+            token = token.split(';')[0];
+            console.log('token = ' + token);
+            if (token) {
+                req.headers.authorization = 'Bearer ' + token;
+            }
+            delete req.headers.cookie;
+            }
+        }
+
+        if (req.url.startsWith('/hscn/')) {
+            // For Access Token-authenticated messages from HSCN (eg Leeds)
+            // we need to change the Authorization header because QEWD
+            // expects a Bearer token to be a JWT.  We'll change it to
+            // a custom type of Access to allow the incoming message to
+            // not get rejected by the Conductor, and make it to the
+            // OpenEHR microservice
+
+            if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            var token = req.headers.authorization.split('Bearer ')[1];
+            req.headers.authorization = 'AccessToken ' + token;
+            }
+            // for next step see beforeMicroService handler in OpenEHR MicroService index.js
+        }
+
+    } catch (error) {
+        fileLogger.error('', error);
     }
-    if (!req.headers['x-requested-with']) {
-      return sendError('Invalid request: x-requested-with header missing');
-    }
-    if (req.headers['x-requested-with'] !== 'XMLHttpRequest') {
-      return sendError('Invalid request: x-requested-with header invalid');
-    }
-  }
-
-  if (!req.url.startsWith('/auth') && 
-    !req.url.startsWith('/initialise') && 
-    !req.url.startsWith('/hscn/')) {
     
-    console.log('onWSRequest|checkTerms');
-
-    let termsSigned = false;
-    let meta
-
-    if (req.headers.cookie && req.headers.cookie.indexOf('META=') !== -1) {
-      try {
-        
-        meta = req.headers.cookie.split('META=')[1];
-        meta = meta.split(';')[0];
-        const decoded = jwt.decode(meta, config.jwt.secret);
-
-        termsSigned = decoded.signedTerms;
-      } catch (e) {
-        console.log('onWSRequest|checkTerms|err', e)
-        return res.send({ status: 'sign_terms' });
-      }      
-    } 
-    
-    if (!termsSigned) {
-      console.log('onWSRequest|checkTerms|signTerms');
-      return res.send({ status: 'sign_terms' });
-    } else {
-      console.log('onWSRequest|checkTerms|termsSigned');
-      req.headers.meta = meta;
-    }
-  }
-
-  // incoming requests may have the JWT in a cookie header (eg /api/auth/token from OIDC Provider)
-  // if so, copy this into a Bearer authorization header
-
-  if (!req.headers.authorization && req.headers.cookie) {
-    if (req.headers.cookie.indexOf('JSESSIONID=') !== -1) {
-      var token = req.headers.cookie.split('JSESSIONID=')[1];
-      token = token.split(';')[0];
-      console.log('token = ' + token);
-      if (token) {
-        req.headers.authorization = 'Bearer ' + token;
-      }
-      delete req.headers.cookie;
-    }
-  }
-
-  if (req.url.startsWith('/hscn/')) {
-    // For Access Token-authenticated messages from HSCN (eg Leeds)
-    // we need to change the Authorization header because QEWD
-    // expects a Bearer token to be a JWT.  We'll change it to
-    // a custom type of Access to allow the incoming message to
-    // not get rejected by the Conductor, and make it to the
-    // OpenEHR microservice
-
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-      var token = req.headers.authorization.split('Bearer ')[1];
-      req.headers.authorization = 'AccessToken ' + token;
-    }
-    // for next step see beforeMicroService handler in OpenEHR MicroService index.js
-  }
-
-  next();
+    next();
 };

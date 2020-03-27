@@ -26,9 +26,10 @@
       }
     },
     {
-      "name": "oidc_client",
+      "name": "auth_service",
       "apis": {
-        "import": true
+        "import": true,
+        "imported": true
       },
       "qewd": {
         "serverName": "Authentication MicroService",

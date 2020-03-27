@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { PutPatientHeadingCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * PUT /api/patients/:patientId/:heading/:sourceId
  *
@@ -47,6 +49,8 @@ module.exports = async function putPatientHeading(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/putPatientHeading|err:', err);
 
     const responseError = getResponseError(err);

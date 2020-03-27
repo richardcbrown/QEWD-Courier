@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { MergeDiscoveryDataCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * GET /discovery/merge/:heading
  *
@@ -46,6 +48,8 @@ module.exports = async function mergeDiscoveryData(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/mergeDiscoveryData|err:', err);
 
     const responseError = getResponseError(err);

@@ -34,6 +34,8 @@ const { GetPatientTop3ThingsLatestCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 const { Heading } = require('../../lib/shared/enums');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * GET /api/patients/:patientId/synopsis/:heading
  *
@@ -50,6 +52,8 @@ module.exports = async function getPatientTop3ThingsLatest(args, finished) {
     finished(responseObj);
     return true;
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/getPatientHeadingSynopsis|err:', err);
     
     const responseError = getResponseError(err);

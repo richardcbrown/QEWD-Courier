@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { PutFeedCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * PUT /api/feeds/:sourceId
  *
@@ -46,6 +48,8 @@ module.exports = async function putFeed(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/putFeed|err:', err);
 
     const responseError = getResponseError(err);

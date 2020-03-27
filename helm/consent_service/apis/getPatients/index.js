@@ -20,13 +20,16 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  22 Oct 2019
+  22 March 2020
 
 */
 
 'use strict';
 
-module.exports = function(args, finished) { 
+const logger = require('../../logger').logger;
+
+module.exports = function(args, finished) {
+  try { 
     console.log("apis/getPatients|start");
 
     const pendingCache = this.db.use("Pending");
@@ -36,4 +39,7 @@ module.exports = function(args, finished) {
     finished({ patients: pending });
 
     console.log("apis/getPatients|end");
+  } catch (error) {
+    logger.error('', error);
+  }
 }

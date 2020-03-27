@@ -20,36 +20,42 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  22 Oct 2019
+  22 March 2020
 
 */
 
 'use strict';
 
-module.exports = function(args, finished) { 
-    console.log("apis/setPatient|start");
+const logger = require('../../logger').logger;
 
-    const patientId = args.patientId;
-    const patient = args.req.body;
+module.exports = function(args, finished) {
+    try { 
+        console.log("apis/setPatient|start");
 
-    const pendingCache = this.db.use("Pending");
+        const patientId = args.patientId;
+        const patient = args.req.body;
 
-    pendingCache.$(patientId).setDocument(patient);
+        const pendingCache = this.db.use("Pending");
 
-    const pending = pendingCache.$('PendingPatients').getDocument(true);
-    
-    const consenting = pendingCache.$('ConsentingPatients').getDocument(true) || {};
+        pendingCache.$(patientId).setDocument(patient);
 
-    consenting[patientId] = true;
-    delete pending[patientId];
+        const pending = pendingCache.$('PendingPatients').getDocument(true);
+        
+        const consenting = pendingCache.$('ConsentingPatients').getDocument(true) || {};
 
-    pendingCache.$('ConsentingPatients').delete();
-    pendingCache.$('PendingPatients').delete();
+        consenting[patientId] = true;
+        delete pending[patientId];
 
-    pendingCache.$('ConsentingPatients').setDocument(consenting);
-    pendingCache.$('PendingPatients').setDocument(pending);
+        pendingCache.$('ConsentingPatients').delete();
+        pendingCache.$('PendingPatients').delete();
 
-    finished({ ok: true })
+        pendingCache.$('ConsentingPatients').setDocument(consenting);
+        pendingCache.$('PendingPatients').setDocument(pending);
 
-    console.log("apis/setPatient|end");
+        finished({ ok: true })
+
+        console.log("apis/setPatient|end");
+    } catch (error) {
+        logger.error('', error);
+    }
 }

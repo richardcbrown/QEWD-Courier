@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { GetPatientTop3ThingsSummaryCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * GET /api/patients/:patientId/top3Things
  *
@@ -46,6 +48,8 @@ module.exports = async function getPatientTop3ThingsSummary(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/getPatientTop3ThingsSummary|err:', err);
 
     const responseError = getResponseError(err);

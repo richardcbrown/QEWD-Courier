@@ -20,41 +20,46 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  22 Oct 2019
+  22 March 2020
 
 */
 
 'use strict';
 
+const logger = require('../../logger').logger;
+
 module.exports = function(args, finished) { 
+    try {
+        console.log('api/sendConsent|start');
 
-    console.log('api/sendConsent|start');
+        const pendingCache = this.db.use('Pending');
 
-    const pendingCache = this.db.use('Pending');
+        const pending = pendingCache.$('PendingPatients').getDocument(true);
 
-    const pending = pendingCache.$('PendingPatients').getDocument(true);
+        const { patientId } = args
 
-    const { patientId } = args
+        if (!patientId) {
+        return finished({});
+        }
 
-    if (!patientId) {
-      return finished({});
+        pending[`${patientId}`] = true;
+
+        pendingCache.$('PendingPatients').delete();
+        pendingCache.$('PendingPatients').setDocument(pending);
+
+        var session = this.jwt.handlers.createRestSession.call(this, args);
+
+        session.role = 'SYSTEM';
+        session.username = 'helm-consent-service';
+        session.authenticated = true;
+        session.timeout = 600;
+
+        var jwt = this.jwt.handlers.setJWT.call(this, session);
+
+        finished({ ok: true, serviceJwt: jwt });
+
+        console.log('api/sendConsent|end');
+    } catch (error) {
+        logger.error('', error);
     }
-
-    pending[`${patientId}`] = true;
-
-    pendingCache.$('PendingPatients').delete();
-    pendingCache.$('PendingPatients').setDocument(pending);
-
-    var session = this.jwt.handlers.createRestSession.call(this, args);
-
-    session.role = 'SYSTEM';
-    session.username = 'helm-consent-service';
-    session.authenticated = true;
-    session.timeout = 600;
-
-    var jwt = this.jwt.handlers.setJWT.call(this, session);
-
-    finished({ ok: true, serviceJwt: jwt });
-
-    console.log('api/sendConsent|end');
 }

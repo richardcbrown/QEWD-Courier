@@ -27,6 +27,7 @@
 'use strict';
 
 const AuthenticateSiteService = require('../../services/authenticateSiteService')
+const fileLogger = require('../../logger');
 
 function qewdifyError(err) {
   return {
@@ -80,6 +81,7 @@ module.exports = async function(args, finished) {
 
       finished({ site: args.site, patientId: args.patientId, jwt });
     } catch (error) {
+      fileLogger.error('', err);
 
       const responseError = getResponseError(error);
 
