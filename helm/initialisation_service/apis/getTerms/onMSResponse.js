@@ -37,6 +37,7 @@ module.exports = function(message, jwt, forward, sendBack) {
         console.log('api/getTerms|onMSResponse');
 
         const policies = globalConfig["initialisation_service"].policies;
+        const nameMappings = globalConfig["initialisation_service"].nameMappings;
 
         var apiRequest = {
             path: `/api/fhir/getPolicies?name=${ policies }`,
@@ -58,65 +59,71 @@ module.exports = function(message, jwt, forward, sendBack) {
 
             if (responseObj.message.error) {
 
-            console.log('api/initialise|onMSResponse|getPolicies|err', JSON.stringify(responseObj.message.error));
+                console.log('api/initialise|onMSResponse|getPolicies|err', JSON.stringify(responseObj.message.error));
 
-            return sendBack(responseObj);
+                return sendBack(responseObj);
             }
 
             console.log('api/initialise|onMSResponse|getConsent');
 
+            const namePolicies = responseObj.message.resources;
+
+            namePolicies.forEach(policy => {
+                policy.name = nameMappings[policy.name] || policy.name       
+            });
+
             forward(consentRequest, jwt, function(consentResponse) {
             
-            console.log('api/initialise|onMSResponse|getConsent|response');
+                console.log('api/initialise|onMSResponse|getConsent|response');
 
-            if (consentResponse.message.error) {
-                console.log('api/initialise|onMSResponse|getConsent|response|err', JSON.stringify(consentResponse.message.error));
+                if (consentResponse.message.error) {
+                    console.log('api/initialise|onMSResponse|getConsent|response|err', JSON.stringify(consentResponse.message.error));
 
-                return sendBack(consentResponse);
-            }
-
-            if (!consentResponse.message.resources.length) {
-
-                console.log('api/initialise|onMSResponse|getConsent|response|signTerms|noConsent');
-
-                sendBack(responseObj);
-            } else {
-            
-                const acceptedPolicies = [];
-
-                const consents = consentResponse.message.resources;
-                const policies = responseObj.message.resources;
-
-                policies.forEach(policy => {
-                consents.forEach(consent => {
-                    if (consent.policyRule === `Policy/${ policy.id }`) {
-                    acceptedPolicies.push(policy.id);
-                    }
-                });        
-                });
-
-                let allAccepted = true;
-
-                policies.forEach(policy => {
-                if (!acceptedPolicies.find(ap => ap === policy.id)) {
-                    allAccepted = false;
+                    return sendBack(consentResponse);
                 }
-                })
 
-                if (!allAccepted) {
+                if (!consentResponse.message.resources.length) {
 
-                console.log('api/initialise|onMSResponse|getConsent|response|notAllTermsAccepted');
+                    console.log('api/initialise|onMSResponse|getConsent|response|signTerms|noConsent');
 
-                sendBack(responseObj);
+                    sendBack(responseObj);
                 } else {
+                
+                    const acceptedPolicies = [];
 
-                console.log('api/initialise|onMSResponse|getConsent|response|allTermsAccepted');
+                    const consents = consentResponse.message.resources;
+                    const policies = responseObj.message.resources;
 
-                const meta = js.encode({ signedTerms: true }, config.jwt.secret);
+                    policies.forEach(policy => {
+                        consents.forEach(consent => {
+                            if (consent.policyRule === `Policy/${ policy.id }`) {
+                                acceptedPolicies.push(policy.id);
+                            }
+                        });        
+                    });
 
-                sendBack({ message: { ...message, status: 'login', meta } });
+                    let allAccepted = true;
+
+                    policies.forEach(policy => {
+                        if (!acceptedPolicies.find(ap => ap === policy.id)) {
+                            allAccepted = false;
+                        }
+                    })
+
+                    if (!allAccepted) {
+
+                        console.log('api/initialise|onMSResponse|getConsent|response|notAllTermsAccepted');
+
+                        sendBack(responseObj);
+                    } else {
+
+                        console.log('api/initialise|onMSResponse|getConsent|response|allTermsAccepted');
+
+                        const meta = js.encode({ signedTerms: true }, config.jwt.secret);
+
+                        sendBack({ message: { ...message, status: 'login', meta } });
+                    }
                 }
-            }
             });
         });
     } catch (error) {
