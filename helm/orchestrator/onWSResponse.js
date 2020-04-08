@@ -58,6 +58,8 @@
 
 */
 
+const fileLogger = require('./logger').logger;
+
 var returnArrayResponses = {
   getPatientHeadingSummary: true,
   getPatientHeadingDetail: true,
@@ -66,75 +68,78 @@ var returnArrayResponses = {
 };
 
 module.exports = function(req, res, next) {
+    try {
+        // a response message coming back from the worker will be saved in res.locals.message
+        var messageObj = res.locals.message;
 
-  // a response message coming back from the worker will be saved in res.locals.message
-  var messageObj = res.locals.message;
+        if (messageObj.meta) {
+            res.cookie('META', messageObj.meta);
+            delete messageObj.meta;
+        }
 
-  if (messageObj.meta) {
-    res.cookie('META', messageObj.meta);
-    delete messageObj.meta;
-  }
+        if (messageObj.oidc_redirect) {
 
-  if (messageObj.oidc_redirect) {
+            // Special processing for the /api/auth/token response which, if successful
+            // will include the redirection URL for the browser (messageObj.oidc_redirect)
 
-    // Special processing for the /api/auth/token response which, if successful
-    // will include the redirection URL for the browser (messageObj.oidc_redirect)
+            // The JWT will be returned in a cookie name/value pair, which
+            // will also be in the response from /api/auth/token
 
-    // The JWT will be returned in a cookie name/value pair, which
-    // will also be in the response from /api/auth/token
+            if (messageObj.cookieName) {
+            var value = messageObj.cookieValue || messageObj.token;
+            var options = {path: messageObj.cookiePath};
+            if (messageObj.cookieDelete) {
+                res.clearCookie(messageObj.cookieName, options);
+            }
+            else {
+                res.cookie(messageObj.cookieName, value, options);
+            }
+            }
 
-    if (messageObj.cookieName) {
-      var value = messageObj.cookieValue || messageObj.token;
-      var options = {path: messageObj.cookiePath};
-      if (messageObj.cookieDelete) {
-        res.clearCookie(messageObj.cookieName, options);
-      }
-      else {
-        res.cookie(messageObj.cookieName, value, options);
-      }
+            if (messageObj.cors) {
+            console.log('** adding CORS headers');
+            res.header('Access-Control-Allow-Credentials', 'true');
+            res.header('Access-Control-Allow-Headers', 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization');
+            res.header('Access-Control-Allow-Methods', 'GET, PUT, DELETE, POST, OPTIONS');
+            res.header('Access-Control-Allow-Origin', '*');
+            }
+            console.log('redirecting browser to ' + messageObj.oidc_redirect);
+            res.redirect(messageObj.oidc_redirect);
+        }
+
+        else if (messageObj.api && messageObj.use && returnArrayResponses[messageObj.api]) {
+
+            // Convert the QEWD-formatted response to a simple array response.  The array property
+            //  to use will be defined in the 'use' property
+
+            var results = messageObj[messageObj.use];
+            res.send(results);
+        }
+
+        else {
+
+
+            // Pass-through response handler logic
+
+            // send response message unchanged as QEWD itself would have done it:
+
+            if (messageObj.error) {
+            // handling error responses
+
+            var code = 400;
+            var status = messageObj.status;
+            if (status && status.code) code = status.code;
+            res.set('content-length', messageObj.length);
+            res.status(code).send(messageObj);
+            }
+
+            else {
+            // all other valid responses
+
+            res.send(messageObj);
+            }
+        }
+    } catch (error) {
+        fileLogger.error('', error);
     }
-
-    if (messageObj.cors) {
-      console.log('** adding CORS headers');
-      res.header('Access-Control-Allow-Credentials', 'true');
-      res.header('Access-Control-Allow-Headers', 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization');
-      res.header('Access-Control-Allow-Methods', 'GET, PUT, DELETE, POST, OPTIONS');
-      res.header('Access-Control-Allow-Origin', '*');
-    }
-    console.log('redirecting browser to ' + messageObj.oidc_redirect);
-    res.redirect(messageObj.oidc_redirect);
-  }
-
-  else if (messageObj.api && messageObj.use && returnArrayResponses[messageObj.api]) {
-
-    // Convert the QEWD-formatted response to a simple array response.  The array property
-    //  to use will be defined in the 'use' property
-
-    var results = messageObj[messageObj.use];
-    res.send(results);
-  }
-
-  else {
-
-
-    // Pass-through response handler logic
-
-    // send response message unchanged as QEWD itself would have done it:
-
-    if (messageObj.error) {
-      // handling error responses
-
-      var code = 400;
-      var status = messageObj.status;
-      if (status && status.code) code = status.code;
-      res.set('content-length', messageObj.length);
-      res.status(code).send(messageObj);
-    }
-
-    else {
-      // all other valid responses
-
-      res.send(messageObj);
-    }
-  }
 };

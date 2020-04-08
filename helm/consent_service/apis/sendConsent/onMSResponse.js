@@ -20,28 +20,33 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  22 Oct 2019
+  22 March 2020
 
 */
 
 'use strict';
 
+const logger = require('../../logger').logger;
+
 module.exports = async function(message, jwt, forward, sendBack) {
-  
-    console.log('api/sendConsent|onMSResponse|start');
+    try {
+        console.log('api/sendConsent|onMSResponse|start');
 
-    const getPatientsRequest = {
-        path: '/api/consent/patients',
-        method: 'POST'
-    };
+        const getPatientsRequest = {
+            path: '/api/consent/patients',
+            method: 'POST'
+        };
 
-    forward(getPatientsRequest, message.serviceJwt, function(responseObj) {
-        if (responseObj.message.error) {
-            console.log(responseObj.message.error);
-        }
+        forward(getPatientsRequest, message.serviceJwt, function(responseObj) {
+            if (responseObj.message.error) {
+                console.log(responseObj.message.error);
+            }
 
-        sendBack({ message: { ok: true } });
-    });
+            sendBack({ message: { ok: true } });
+        });
 
-    console.log('api/sendConsent|onMSResponse|end');
+        console.log('api/sendConsent|onMSResponse|end');
+    } catch (error) {
+        logger.error('', error);
+    }
 };

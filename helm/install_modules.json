@@ -10,5 +10,6 @@
   "qewd-template",
   "valid-url",
   "winston",
-  "moment"
+  "moment",
+  "winston-daily-rotate-file"
 ]

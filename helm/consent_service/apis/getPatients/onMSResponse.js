@@ -20,53 +20,58 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  22 Oct 2019
+  22 March 2020
 
 */
 
 'use strict';
 
+const logger = require('../../logger').logger;
+
 module.exports = async function(message, jwt, forward, sendBack) {
-  
-    console.log('apis/getPatients|onMSResponse|start');
-  
-    const { patients } = message;
+    try {
+        console.log('apis/getPatients|onMSResponse|start');
+    
+        const { patients } = message;
 
-    const patientPromises = [];
+        const patientPromises = [];
 
-    Object.keys(patients).forEach((patientId) => {
-        const patientPromise = new Promise((resolve, reject) => {
-            const patientRequest = {
-                path: `/api/fhir/patient/${patientId}`,
-                method: 'GET'
-            };
-
-            forward(patientRequest, jwt, function (responseObj) {
-                const setPatientRequest = {
-                    path: `/api/consent/patient/${patientId}`,
-                    method: 'POST',
-                    body: responseObj.message.resources
+        Object.keys(patients).forEach((patientId) => {
+            const patientPromise = new Promise((resolve, reject) => {
+                const patientRequest = {
+                    path: `/api/fhir/patient/${patientId}`,
+                    method: 'GET'
                 };
 
-                forward(setPatientRequest, jwt, function (setResponse) {
-                    if (setResponse.error) {
-                        reject(error);
-                    } else {
-                        resolve();
-                    }
+                forward(patientRequest, jwt, function (responseObj) {
+                    const setPatientRequest = {
+                        path: `/api/consent/patient/${patientId}`,
+                        method: 'POST',
+                        body: responseObj.message.resources
+                    };
+
+                    forward(setPatientRequest, jwt, function (setResponse) {
+                        if (setResponse.error) {
+                            reject(error);
+                        } else {
+                            resolve();
+                        }
+                    });
                 });
             });
+
+            patientPromises.push(patientPromise)
         });
 
-        patientPromises.push(patientPromise)
-    });
+        Promise.all(patientPromises).then(() => {
+            sendBack({ message: { ok: true } });
+        }).catch((error) => {
+            console.log(error);
+            sendBack({ message: { ok: false } });
+        });
 
-    Promise.all(patientPromises).then(() => {
-        sendBack({ message: { ok: true } });
-    }).catch((error) => {
-        console.log(error);
-        sendBack({ message: { ok: false } });
-    });
-
-    console.log('apis/getPatients|onMSResponse|end');
+        console.log('apis/getPatients|onMSResponse|end');
+    } catch (error) {
+        logger.error('', error);
+    }
 };

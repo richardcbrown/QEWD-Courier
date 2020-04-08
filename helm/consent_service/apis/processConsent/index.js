@@ -20,11 +20,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  22 Oct 2019
+  22 March 2020
 
 */
 
 'use strict';
+
+const logger = require('../../logger').logger;
 
 const ConsentProcessorService = require('../../services/consentProcessorService');
 
@@ -41,6 +43,7 @@ module.exports = async function(args, finished) {
 
         await processor.process();
     } catch (error) {
+        logger.error('', error);
         console.log(error);
     }
 

@@ -2,13 +2,10 @@
 
  ----------------------------------------------------------------------------
  |                                                                          |
- | Copyright (c) 2018-19 Ripple Foundation Community Interest Company       |
- | All rights reserved.                                                     |
+ | http://www.synanetics.com                                                |
+ | Email: support@synanetics.com                                            |
  |                                                                          |
- | http://rippleosi.org                                                     |
- | Email: code.custodian@rippleosi.org                                      |
- |                                                                          |
- | Author: Alexey Kucherenko <alexei.kucherenko@gmail.com>                  |
+ | Author: Richard Brown                                                    |
  |                                                                          |
  | Licensed under the Apache License, Version 2.0 (the "License");          |
  | you may not use this file except in compliance with the License.         |
@@ -23,37 +20,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 March 2019
+  17 Mar 2020
 
 */
 
 'use strict';
 
-const { logger } = require('../../lib/core');
-const { RevertDiscoveryDataCommand } = require('../../lib/commands');
-const { getResponseError } = require('../../lib/errors');
+require('./logger');
 
-const fileLogger = require('../../logger').logger;
+module.exports = function() {
 
-/**
- * DELETE /api/discovery/revert/:patientId/:heading
- *
- * @param  {Object} args
- * @param  {Function} finished
- */
-module.exports = async function revertDiscoveryData(args, finished) {
-  try {
-    const command = new RevertDiscoveryDataCommand(args.req.ctx);
-    const responseObj = await command.execute(args.patientId, args.heading);
-
-    finished(responseObj);
-  } catch (err) {
-    fileLogger.error('', err);
-
-    logger.error('apis/revertDiscoveryData|err:', err);
-
-    const responseError = getResponseError(err);
-
-    finished(responseError);
-  }
 };

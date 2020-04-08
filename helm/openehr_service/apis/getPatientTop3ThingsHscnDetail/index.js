@@ -33,6 +33,8 @@ const { ExecutionContext, logger } = require('../../lib/core');
 const { GetPatientTop3ThingsHscnDetailCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * GET /api/hscn/:site/top3Things/:patientId
  *
@@ -47,6 +49,8 @@ module.exports = async function getPatientTop3ThingsHscnDetail(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/getPatientTop3ThingsHscnDetail|err:', err);
 
     const responseError = getResponseError(err);

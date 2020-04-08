@@ -36,6 +36,8 @@ const { parseEthercisError } = require('../errors');
 const { QueryFormat } = require('../shared/enums');
 const { parseJsonFormatter } = require('../shared/utils');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * NOTE: Ehr-Session header must capitalized
  */
@@ -50,12 +52,14 @@ function requestAsync(args) {
 
     request(args, (err, response, body) => {
       if (err) {
+        fileLogger.error('', err);
         logger.error('services/ehrRestService|err:', err);
         return reject(err);
       }
 
       if (hasError(response)) {
         const error = parseEthercisError(response);
+        fileLogger.error('', error);
         logger.error('services/ehrRestService|err:', error);
         return reject(error);
       }

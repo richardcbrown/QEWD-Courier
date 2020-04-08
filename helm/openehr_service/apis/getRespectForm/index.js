@@ -33,6 +33,8 @@ const { logger } = require('../../lib/core');
 const { GetRespectFormCommand } = require('../../lib/commands');
 const { getResponseError } = require('../../lib/errors');
 
+const fileLogger = require('../../logger').logger;
+
 /**
  * GET /api/patients/:patientId/respectforms/:sourceId/:version
  *
@@ -46,6 +48,8 @@ module.exports = async function getRespectForm(args, finished) {
 
     finished(responseObj);
   } catch (err) {
+    fileLogger.error('', err);
+
     logger.error('apis/getRespectForm|err:', err);
 
     const responseError = getResponseError(err);

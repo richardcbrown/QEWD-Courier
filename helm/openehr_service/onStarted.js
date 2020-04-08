@@ -2,13 +2,10 @@
 
  ----------------------------------------------------------------------------
  |                                                                          |
- | Copyright (c) 2019 Ripple Foundation Community Interest Company          |
- | All rights reserved.                                                     |
+ | http://www.synanetics.com                                                |
+ | Email: support@synanetics.com                                            |
  |                                                                          |
- | http://rippleosi.org                                                     |
- | Email: code.custodian@rippleosi.org                                      |
- |                                                                          |
- | Author: Alexey Kucherenko <alexei.kucherenko@gmail.com>                  |
+ | Author: Richard Brown                                                    |
  |                                                                          |
  | Licensed under the Apache License, Version 2.0 (the "License");          |
  | you may not use this file except in compliance with the License.         |
@@ -23,11 +20,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 March 2019
+  17 Mar 2020
 
 */
 
 'use strict';
+
+require('./logger');
 
 const globalConfig = require('/opt/qewd/mapped/configuration/global_config.json');
 
