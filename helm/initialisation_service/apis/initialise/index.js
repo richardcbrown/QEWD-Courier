@@ -26,9 +26,11 @@
 
 'use strict';
 
+const req = require("request-promise-native")
+const globalConfig = require('/opt/qewd/mapped/configuration/global_config.json');
 const logger = require('../../logger').logger;
 
-module.exports = function(args, finished) {
+module.exports = async function(args, finished) {
     try {
         console.log('api/initialise|invoke');
 

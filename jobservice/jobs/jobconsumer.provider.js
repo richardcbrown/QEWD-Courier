@@ -94,7 +94,7 @@ class LookupPatientConsumer {
 
             const [resourceType, resourceId] = referenceComps.slice(Math.max(referenceComps.length - 2, 0))
 
-            const patient = /** @type {fhir.Patient} */ (await this.fhirDataProvider.read(resourceType, resourceId))
+            const patient = /** @type {fhir.Patient} */ (await this.fhirDataProvider.read(resourceType, resourceId, payload.nhsNumber))
 
             if (isResolved(patient)) {
                 this.patientCache.setPendingPatientStatus(payload.nhsNumber, PendingPatientStatus.Found)
@@ -109,7 +109,7 @@ class LookupPatientConsumer {
                 }
             }
         } catch (error) {
-            this.logger.error(error.message, error.stack)
+            this.logger.error(error.message, { stack: error.stack })
 
             return {
                 success: false,
@@ -148,11 +148,13 @@ class RegisterPatientConsumer {
      * @param {PatientCacheProvider} patientCache
      * @param {*} logger
      */
-    constructor(pixDataProvider, jobProducerProvider, patientCache, logger) {
+    constructor(pixDataProvider, jobProducerProvider, patientCache, logger, configuration, fhirDataProvider) {
         this.pixDataProvider = pixDataProvider
+        this.fhirDataProvider = fhirDataProvider
         this.jobProducerProvider = jobProducerProvider
         this.patientCache = patientCache
         this.logger = logger
+        this.configuration = configuration
         this.consume = this.consume.bind(this)
     }
 
@@ -162,6 +164,36 @@ class RegisterPatientConsumer {
         const payload = JSON.parse(content.toString())
 
         this.patientCache.setPendingPatientStatus(payload.nhsNumber, PendingPatientStatus.NotFound)
+    }
+
+    async rebuildLinkage(nhsNumber) {
+        const linkagesWithPatients = await this.fhirDataProvider.search("Linkage", { author: this.configuration.orgReference, _include: "Linkage:source" }, nhsNumber)
+
+        const bundle = linkagesWithPatients
+
+        const patientEntry = bundle.entry.find((e) => {
+            return e.resource.identifier && e.resource.identifier.some((id) => id.value === nhsNumber) 
+        })
+
+        if (!patientEntry) {
+            throw Error("No patient entries")
+        }
+
+        const patientReference = patientEntry.fullUrl
+        
+        if (!patientReference) {
+            throw Error("Linkage patient not found")
+        }
+
+        const linkageEntry = bundle.entry.find((e) => {
+            return e.resource.resourceType === "Linkage" && getReferenceFromLinkage(e.resource) === patientReference
+        })
+
+        if (!linkageEntry) {
+            throw Error("Linkage not found for patient")
+        }
+
+        return linkageEntry.resource
     }
 
     /**
@@ -204,11 +236,19 @@ class RegisterPatientConsumer {
                 }
             }
 
-            const patientDetails = await request(`http://localhost:9999/userinfo?nhsNumber=${payload.nhsNumber}`, {
+            const requestDetails = {
                 auth: {
                     bearer: payload.token,
                 },
-            })
+            }
+
+            if (this.configuration.mock) {
+                requestDetails.body = JSON.stringify({ nhsNumber: payload.nhsNumber })
+                requestDetails.headers = { "Content-Type": "application/json" }
+                requestDetails.method = "POST"
+            }
+
+            const patientDetails = await request(this.configuration.host, requestDetails)
 
             const { family_name, given_name, nhs_number, birthdate } = JSON.parse(patientDetails)
 
@@ -248,15 +288,17 @@ class RegisterPatientConsumer {
                 birthDate: birthdate,
             }
 
-            const response = await this.pixDataProvider.create(pixPatient.resourceType, pixPatient)
+            const response = await this.pixDataProvider.create(pixPatient.resourceType, pixPatient, nhs_number)
 
             const body = JSON.parse(response.body)
 
-            if (body.resourceType !== "Linkage") {
-                throw Error(response.body)
-            }
+            let result
 
-            const result = /** @type {fhir.Linkage} */ (body)
+            if (body.resourceType !== "Linkage") {
+                result = await this.rebuildLinkage(nhs_number)
+            } else {
+                result = /** @type {fhir.Linkage} */ (body)
+            }
 
             const patientReference = getReferenceFromLinkage(/** @type {fhir.Linkage} */ (result))
 
@@ -274,7 +316,7 @@ class RegisterPatientConsumer {
                 success: true,
             }
         } catch (error) {
-            this.logger.error(error.message, error.stack)
+            this.logger.error(error.message, { stack: error.stack })
 
             return {
                 success: false,
@@ -382,13 +424,14 @@ class RabbitJobConsumer {
 }
 
 class JobConsumerProvider {
-    constructor(configuration, jobProducerProvider, pixDataProvider, fhirDataProvider, cacher, logger) {
+    constructor(configuration, jobProducerProvider, pixDataProvider, fhirDataProvider, cacher, logger, adminFhirDataProvider) {
         this.configuration = configuration
         this.pixDataProvider = pixDataProvider
         this.fhirDataProvider = fhirDataProvider
         this.cacher = cacher
         this.logger = logger
         this.jobProducerProvider = jobProducerProvider
+        this.adminFhirDataProvider = adminFhirDataProvider
     }
 
     getJobConsumer(jobType) {
@@ -398,7 +441,9 @@ class JobConsumerProvider {
                     this.pixDataProvider,
                     this.jobProducerProvider,
                     this.cacher,
-                    this.logger
+                    this.logger,
+                    this.configuration.registerpatientconsumer,
+                    this.adminFhirDataProvider
                 )
 
                 return new RabbitJobConsumer(this.configuration.rabbit, jobType, registerPatientConsumer, this.logger)

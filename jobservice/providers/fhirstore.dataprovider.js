@@ -5,6 +5,9 @@
 /** @typedef {import("../config/config.fhirstore").FhirStoreConfig} FhirStoreConfig */
 
 const request = require("request-promise-native")
+const https = require("https")
+const fs = require("fs")
+const path = require("path")
 
 class FhirStoreDataProvider {
     /** @param {Logger} logger */
@@ -16,12 +19,36 @@ class FhirStoreDataProvider {
         this.authProvider = authProvider
     }
 
+    /** @private */
+    configure(request) {
+        const { configuration } = this
+
+        if (configuration.env !== "local") {
+            request.agent = new https.Agent({
+                host: configuration.agentHost,
+                port: configuration.agentPort,
+                passphrase: configuration.passphrase,
+                rejectUnauthorized: true,
+                cert: fs.readFileSync(path.join(__dirname, "../", configuration.certFile)),
+                key: fs.readFileSync(path.join(__dirname, "../", configuration.keyFile)),
+                ca: fs.readFileSync(path.join(__dirname,  "../", configuration.caFile)) 
+            })
+            request.rejectUnauthorized = true
+        } else {
+            request.rejectUnauthorized = false
+        }
+
+        if (configuration.proxy) {
+            request.proxy = configuration.proxy
+        }
+    }
+
     /**
      * @param {string} resourceType
      * @param {string} resourceID
      * @returns {Promise<fhir.Resource>} response
      */
-    async read(resourceType, resourceID) {
+    async read(resourceType, resourceID, nhsNumber) {
         try {
             const { configuration } = this
 
@@ -35,7 +62,9 @@ class FhirStoreDataProvider {
                 resolveWithFullResponse: true,
             }
 
-            await this.authProvider.authorize(options)
+            this.configure(options)
+
+            await this.authProvider.authorize(options, nhsNumber)
 
             const result = await request(options)
 
@@ -52,7 +81,7 @@ class FhirStoreDataProvider {
      * @param {Object} query
      * @returns {Promise<fhir.Bundle>} response
      */
-    async search(resourceType, query) {
+    async search(resourceType, query, nhsNumber) {
         try {
             const { configuration } = this
 
@@ -67,7 +96,9 @@ class FhirStoreDataProvider {
                 rejectUnauthorized: false,
             }
 
-            await this.authProvider.authorize(options)
+            this.configure(options)
+
+            await this.authProvider.authorize(options, nhsNumber)
 
             const result = await request(options)
 
@@ -83,7 +114,7 @@ class FhirStoreDataProvider {
      * @param {Object} resource
      * @returns {Promise<FullResponse>} response
      */
-    async create(resourceType, resource) {
+    async create(resourceType, resource, nhsNumber) {
         try {
             const { configuration } = this
 
@@ -98,7 +129,9 @@ class FhirStoreDataProvider {
                 rejectUnauthorized: false,
             }
 
-            await this.authProvider.authorize(options)
+            this.configure(options)
+
+            await this.authProvider.authorize(options, nhsNumber)
 
             const result = await request(options)
 
@@ -115,7 +148,7 @@ class FhirStoreDataProvider {
      * @param {Object} resource
      * @returns {Promise<FullResponse>} response
      */
-    async update(resourceType, resourceID, resource) {
+    async update(resourceType, resourceID, resource, nhsNumber) {
         try {
             const { configuration } = this
 
@@ -130,7 +163,9 @@ class FhirStoreDataProvider {
                 rejectUnauthorized: false,
             }
 
-            await this.authProvider.authorize(options)
+            this.configure(options)
+
+            await this.authProvider.authorize(options, nhsNumber)
 
             return await request(options)
         } catch (err) {
@@ -144,7 +179,7 @@ class FhirStoreDataProvider {
      * @param {string} resourceID
      * @returns {Promise<FullResponse>} response
      */
-    async remove(resourceType, resourceID) {
+    async remove(resourceType, resourceID, nhsNumber) {
         try {
             const { configuration } = this
 
@@ -157,7 +192,9 @@ class FhirStoreDataProvider {
                 rejectUnauthorized: false,
             }
 
-            await this.authProvider.authorize(options)
+            this.configure(options)
+
+            await this.authProvider.authorize(options, nhsNumber)
 
             return await request(options)
         } catch (err) {
