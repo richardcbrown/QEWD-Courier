@@ -54,10 +54,29 @@ module.exports = async function(args, finished) {
             }
         }
 
+        let lookupStatus = null
+
+        if (authenticated) {
+            const { job_credentials } = globalConfig["initialisation_service"]
+
+            lookupStatus = await req({
+                url: job_credentials.host,
+                auth: { 
+                    user: job_credentials.client_id, 
+                    pass: job_credentials.client_secret 
+                },
+                method: "POST",
+                json: true,
+                body: { nhsNumber: args.session.nhsNumber }
+            })
+        }
+
         console.log('api/initialise|invoke|complete');
 
-        return finished({ ok: true, authenticated });
+        return finished({ ok: true, authenticated, nhsNumber: args.session.nhsNumber, lookupStatus });
     } catch (error) {
         logger.error('', error);
+
+        return finished({ error })
     }
 }

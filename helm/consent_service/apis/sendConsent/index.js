@@ -51,6 +51,7 @@ module.exports = function(args, finished) {
 
         session.role = 'SYSTEM';
         session.username = 'helm-consent-service';
+        session.nhsNumber = patientId;
         session.authenticated = true;
         session.timeout = 600;
 

@@ -43,6 +43,9 @@ function isResolved(patient) {
         )
     })
 
+    console.log("Nhs verified status")
+    console.log(nhsVerifiedExtension)
+
     return !!nhsVerifiedExtension
 }
 
@@ -87,6 +90,8 @@ class LookupPatientConsumer {
             if (!payload.reference) {
                 throw Error(`Message payload is missing patient reference`)
             }
+
+            console.log(`Looking up patient: ${payload.nhsNumber}, ${payload.reference}`)
 
             this.patientCache.setPendingPatientStatus(payload.nhsNumber, PendingPatientStatus.Searching)
 
@@ -216,6 +221,8 @@ class RegisterPatientConsumer {
                 throw Error(`Message payload is missing NHS number`)
             }
 
+            console.log(`Registering patient: ${payload.nhsNumber}`)
+
             // check if we already have linkage for
             const linkage = await this.patientCache.getPatientLinkage(payload.nhsNumber)
 
@@ -311,6 +318,8 @@ class RegisterPatientConsumer {
                 nhsNumber: payload.nhsNumber,
                 reference: patientReference,
             })
+
+            console.log(`Registered patient: ${payload.nhsNumber}`)
 
             return {
                 success: true,
