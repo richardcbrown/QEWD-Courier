@@ -38,8 +38,6 @@ class TokenProvider {
 
             return this.token.access_token
         } catch (error) {
-            this.logger.error(error)
-
             throw error
         }
     }

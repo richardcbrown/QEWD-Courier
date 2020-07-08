@@ -16,6 +16,8 @@ function getConfig() {
         azp: process.env.FHIRSTORE_SOS_AUTH_AZP,
         rol: process.env.FHIRSTORE_SOS_AUTH_ROL,
         env: process.env.FHIRSTORE_SOS_ENV,
+        signingKeyFile: process.env.FHIRSTORE_SOS_SIGNINGKEYFILE,
+        signingPassphrase: process.env.FHIRSTORE_SOS_SIGNINGPASSPHRASE,
         agentHost: process.env.FHIRSTORE_SOS_IAM_HOST,
         agentPort: process.env.FHIRSTORE_SOS_IAM_PORT,
         passphrase: process.env.FHIRSTORE_SOS_PASSPHRASE,

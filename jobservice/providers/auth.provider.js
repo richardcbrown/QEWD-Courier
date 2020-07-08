@@ -52,8 +52,6 @@ class AuthProvider {
 
             return await request(options)
         } catch (error) {
-            this.logger.error(error)
-
             throw error
         }
     }

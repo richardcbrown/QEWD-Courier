@@ -71,7 +71,6 @@ class PixDataProvider {
 
             return result
         } catch (err) {
-            this.logger.error(err)
             throw err
         }
     }

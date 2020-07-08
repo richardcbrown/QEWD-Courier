@@ -70,8 +70,6 @@ class FhirStoreDataProvider {
 
             return result.body
         } catch (err) {
-            this.logger.error(err)
-
             throw err
         }
     }
@@ -137,7 +135,6 @@ class FhirStoreDataProvider {
 
             return result
         } catch (err) {
-            this.logger.error(err)
             throw err
         }
     }
@@ -169,7 +166,6 @@ class FhirStoreDataProvider {
 
             return await request(options)
         } catch (err) {
-            this.logger.error(err)
             throw err
         }
     }
@@ -198,7 +194,6 @@ class FhirStoreDataProvider {
 
             return await request(options)
         } catch (err) {
-            this.logger.error(err)
             throw err
         }
     }

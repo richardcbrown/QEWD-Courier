@@ -68,8 +68,6 @@ class AuthProvider {
 
             return await request(options)
         } catch (error) {
-            this.logger.error(error)
-
             throw error
         }
     }
@@ -107,7 +105,7 @@ class AuthProvider {
         if (env === "local") {
             return JSON.stringify(jwtAssertion)
         } else {
-            const signed = jwt.sign(jwtAssertion, { key: fs.readFileSync(path.join(__dirname, "../", this.configuration.keyFile)), passphrase: this.configuration.passphrase }, {
+            const signed = jwt.sign(jwtAssertion, { key: fs.readFileSync(path.join(__dirname, "../", this.configuration.signingKeyFile)), passphrase: this.configuration.signingPassphrase }, {
                 algorithm: "RS256",
             })
 
