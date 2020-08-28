@@ -79,7 +79,8 @@ module.exports = function(req, res, next) {
             }
         }
 
-        if (!req.url.startsWith('/auth') && 
+        if (!req.url.startsWith('/auth') &&
+            !req.url.startsWith('/internal') && 
             !req.url.startsWith('/initialise') && 
             !req.url.startsWith('/hscn/')) {
             

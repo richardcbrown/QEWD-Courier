@@ -6,3 +6,6 @@ logs
 configuration
 www
 yottaDB
+keys
+.env
+redis

@@ -58,6 +58,12 @@ module.exports = async function(responseObj, request, forwardToMS, sendResponse,
             return;
         }
 
+        const { lookupStatus } = responseObj.message
+
+        if (lookupStatus && lookupStatus.status !== "found") {
+            return sendResponse({ message: lookupStatus })
+        }
+
         if (responseObj.message.status && responseObj.message.status === 'sign_terms') {
             console.log('api/initialise|onOrchResponse|signTerms');
             return sendResponse(responseObj);
@@ -96,6 +102,7 @@ module.exports = async function(responseObj, request, forwardToMS, sendResponse,
             return sendResponse({
                 ok: true,
                 mode: 'secure',
+                status: lookupStatus.status,
                 meta: responseObj.message.meta
             });
 

@@ -11,5 +11,7 @@
   "valid-url",
   "winston",
   "moment",
-  "winston-daily-rotate-file"
+  "winston-daily-rotate-file",
+  "request-promise-native",
+  "amqplib"
 ]
