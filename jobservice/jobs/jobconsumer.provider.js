@@ -39,6 +39,10 @@ function isResolved(patient) {
             matchCoding(ex.valueCodeableConcept, {
                 system: "https://fhir.hl7.org.uk/STU3/CodeSystem/CareConnect-NHSNumberVerificationStatus-1",
                 code: "01",
+            }, 
+            {
+                system: "https://fhir.hl7.org.uk/STU3/ValueSet/CareConnect-NHSNumberVerificationStatus-1",
+                code: "01"
             })
         )
     })
