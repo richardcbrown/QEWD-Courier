@@ -16,6 +16,8 @@ function getConfig() {
         azp: process.env.PIX_SOS_AUTH_AZP,
         rol: process.env.PIX_SOS_AUTH_ROL,
         env: process.env.PIX_SOS_ENV,
+        signingKeyFile: process.env.PIX_SOS_KEYFILE,
+        signingPassphrase: process.env.PIX_SOS_PASSPHRASE,
         agentHost: process.env.PIX_SOS_IAM_HOST,
         agentPort: process.env.PIX_SOS_IAM_PORT,
         passphrase: process.env.PIX_SOS_PASSPHRASE,
