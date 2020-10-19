@@ -15,6 +15,22 @@ const { matchCoding } = require("../models/coding.helpers")
  * @param {fhir.Patient} patient
  */
 function isResolved(patient) {
+    return isResolvedByCode(patient, "01")
+}
+
+/**
+ *
+ * @param {fhir.Patient} patient
+ */
+function isPartiallyResolved(patient) {
+    return isResolvedByCode(patient, "02")
+}
+
+/**
+ * @param {string} code
+ * @param {fhir.Patient} patient
+ */
+function isResolvedByCode(patient, code) {
     const { identifier } = patient
 
     if (!identifier) {
@@ -38,11 +54,11 @@ function isResolved(patient) {
             ex.valueCodeableConcept &&
             matchCoding(ex.valueCodeableConcept, [{
                 system: "https://fhir.hl7.org.uk/STU3/CodeSystem/CareConnect-NHSNumberVerificationStatus-1",
-                code: "01",
+                code,
             }, 
             {
                 system: "https://fhir.hl7.org.uk/STU3/ValueSet/CareConnect-NHSNumberVerificationStatus-1",
-                code: "01"
+                code
             }])
         )
     })
@@ -112,6 +128,17 @@ class LookupPatientConsumer {
                     success: true,
                 }
             } else {
+                const count = message.headers["x-retry-count"]
+                // max retries reached
+                // fallback to partial resolution
+                if (count >= 20 && isPartiallyResolved(patient)) {
+                    this.patientCache.setPendingPatientStatus(payload.nhsNumber, PendingPatientStatus.Found)
+
+                    return {
+                        success: true,
+                    }
+                }
+
                 return {
                     success: false,
                     retry: true,
