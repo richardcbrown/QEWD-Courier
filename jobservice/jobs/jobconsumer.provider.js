@@ -128,7 +128,7 @@ class LookupPatientConsumer {
                     success: true,
                 }
             } else {
-                const count = message.headers["x-retry-count"]
+                const count = message.properties.headers["x-retry-count"]
                 // max retries reached
                 // fallback to partial resolution
                 if (count >= 20 && isPartiallyResolved(patient)) {
