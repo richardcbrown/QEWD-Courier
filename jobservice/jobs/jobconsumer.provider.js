@@ -10,6 +10,8 @@ const uuid = require("uuid")
 const { JobType } = require("./jobproducer.provider")
 const { matchCoding } = require("../models/coding.helpers")
 
+const retryCount = 5
+
 /**
  *
  * @param {fhir.Patient} patient
@@ -131,7 +133,7 @@ class LookupPatientConsumer {
                 const count = message.properties.headers["x-retry-count"]
                 // max retries reached
                 // fallback to partial resolution
-                if (count >= 20 && isPartiallyResolved(patient)) {
+                if (count >= retryCount && isPartiallyResolved(patient)) {
                     this.patientCache.setPendingPatientStatus(payload.nhsNumber, PendingPatientStatus.Found)
 
                     return {
@@ -425,7 +427,7 @@ class RabbitJobConsumer {
 
                     count += 1
 
-                    if (count <= 5) {
+                    if (count <= retryCount) {
                         const channel = await this.getDelayExchange(this.jobType)
 
                         channel.publish(this.jobType, this.jobType, message.content, {
