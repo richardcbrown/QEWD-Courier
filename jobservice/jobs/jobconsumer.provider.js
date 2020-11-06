@@ -425,7 +425,7 @@ class RabbitJobConsumer {
 
                     count += 1
 
-                    if (count <= 20) {
+                    if (count <= 5) {
                         const channel = await this.getDelayExchange(this.jobType)
 
                         channel.publish(this.jobType, this.jobType, message.content, {
