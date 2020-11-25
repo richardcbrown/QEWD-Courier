@@ -86,19 +86,19 @@ module.exports = function(message, jwt, forward, sendBack) {
                 const policies = responseObj.message.resources;
 
                 policies.forEach(policy => {
-                consents.forEach(consent => {
-                    if (consent.policyRule === `Policy/${ policy.id }`) {
-                    acceptedPolicies.push(policy.id);
+                  consents.forEach(consent => {
+                    if ((consent.policy || []).some((cp) => cp.uri && cp.uri.includes(`Policy/${ policy.id }`))) {
+                      acceptedPolicies.push(policy.id);
                     }
-                });        
+                  });        
                 });
 
                 let allAccepted = true;
 
                 policies.forEach(policy => {
-                if (!acceptedPolicies.find(ap => ap === policy.id)) {
-                    allAccepted = false;
-                }
+                  if (!acceptedPolicies.find(ap => ap === policy.id)) {
+                      allAccepted = false;
+                  }
                 })
 
                 if (!allAccepted) {
