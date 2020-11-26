@@ -96,9 +96,9 @@ module.exports = function(message, jwt, forward, sendBack) {
 
                     policies.forEach(policy => {
                         consents.forEach(consent => {
-                            if (consent.policyRule === `Policy/${ policy.id }`) {
-                                acceptedPolicies.push(policy.id);
-                            }
+                          if ((consent.policy || []).some((cp) => cp.uri && cp.uri.includes(`Policy/${ policy.id }`))) {
+                            acceptedPolicies.push(policy.id);
+                          }
                         });        
                     });
 
