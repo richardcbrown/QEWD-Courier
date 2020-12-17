@@ -230,8 +230,6 @@ class RegisterPatientConsumer {
             nhsNumber
         )
 
-        console.log(linkages)
-
         const linkageEntries = linkages.entry
 
         if (!linkageEntries || !linkageEntries) {
