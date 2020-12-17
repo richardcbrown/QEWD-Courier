@@ -96,9 +96,9 @@ let pendingConsumer = null
 let lookupConsumer = null
 
 app.listen(8777, () => {
-    const auth = new AuthProvider(getFhirAuthConfig(), logger, 2)
-    const pixauth = new AuthProvider(getPixAuthConfig(), logger, 2)
-    const adminAuth = new AuthProvider(getFhirAuthConfig(), logger, 5)
+    const auth = new AuthProvider(getFhirAuthConfig(), logger, "2")
+    const pixauth = new AuthProvider(getPixAuthConfig(), logger, "2")
+    const adminAuth = new AuthProvider(getFhirAuthConfig(), logger, "5")
     const adminTokenProvider = new TokenProvider(adminAuth, logger)
     const pixTokenProvider = new TokenProvider(pixauth, logger)
     const tokenProvider = new TokenProvider(auth, logger)

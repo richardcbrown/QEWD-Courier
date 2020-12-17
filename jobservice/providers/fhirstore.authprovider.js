@@ -98,7 +98,7 @@ class AuthProvider {
             jti: uuid.v4(),
         }
 
-        if (nhsNumber && rsn !== 5) {
+        if (nhsNumber && rsn !== "5") {
             jwtAssertion.pat = { nhs: nhsNumber }
         }
 
